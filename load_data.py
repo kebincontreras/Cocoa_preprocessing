@@ -1,5 +1,10 @@
 import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
 
@@ -73,3 +78,41 @@ def graficar_reflectancia(lote, wavelengths,NO_firmas):
     plt.show()
 
     return reflectancia
+
+
+
+
+def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas):
+    if len(lista_reflectancias) != len(lista_etiquetas):
+        raise ValueError("El número de conjuntos de datos de reflectancia y etiquetas debe coincidir.")
+    
+    datos = pd.concat(lista_reflectancias, ignore_index=True)
+    etiquetas = []
+    for reflectancia, etiqueta in zip(lista_reflectancias, lista_etiquetas):
+        etiquetas.extend([etiqueta] * len(reflectancia))
+    
+    # Imputación de valores faltantes
+    imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    datos_imputados = imputer.fit_transform(datos)
+    
+    # Estandarización de los datos antes de PCA
+    datos_escalados = StandardScaler().fit_transform(datos_imputados)  # Corregido para usar datos_imputados
+    
+    # Aplicar PCA
+    pca = PCA(n_components=2)
+    componentes_principales = pca.fit_transform(datos_escalados)
+    df_pca = pd.DataFrame(data=componentes_principales, columns=['PC1', 'PC2'])
+    df_pca['Etiqueta'] = etiquetas
+    
+    # Graficar los resultados de PCA
+    plt.figure(figsize=(8, 6))
+    for etiqueta in set(etiquetas):
+        indices = df_pca['Etiqueta'] == etiqueta
+        plt.scatter(df_pca.loc[indices, 'PC1'], df_pca.loc[indices, 'PC2'], label=etiqueta, alpha=0.5)
+    plt.xlabel('Componente Principal 1')
+    plt.ylabel('Componente Principal 2')
+    plt.legend()
+    plt.title('PCA de Reflectancia')
+    plt.show()
+
+
