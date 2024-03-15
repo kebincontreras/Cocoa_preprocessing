@@ -3,7 +3,6 @@ from load_data import cargar_datos, graficar_firmas_espectrales, graficar_reflec
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
 # Uso de la función
 ruta_base = "C:/Users/USUARIO/Documents/dataset_cocoa_hdsp"
 nombre_blanco = "BLANCO_1.csv"
