@@ -71,3 +71,5 @@ def graficar_reflectancia(lote, wavelengths,NO_firmas):
     plt.ylim([0, 1])
     #plt.legend()
     plt.show()
+
+    return reflectancia
