@@ -42,8 +42,29 @@ def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, 
     for i in range(3, 3 + num_firmas):
         plt.plot(wavelengths, lote.iloc[i, :], label=f'Firma LOTE - Muestra {i}')
 
-    # Omitir la leyenda si hay muchas líneas para mantener la claridad
-    # if num_firmas <= 10:
-    #     plt.legend()
+    plt.show(block=False)
 
+
+def graficar_reflectancia(lote, wavelengths,NO_firmas):
+
+    # Extracción de las mediciones necesarias del DataFrame
+    I_negro = lote.iloc[2, :]
+    I_blanco = lote.iloc[1, :]
+    I_muestra = lote.iloc[3:, :]
+
+    # Cálculo de la reflectancia para cada muestra
+    reflectancia = (I_muestra - I_negro) / (I_blanco - I_negro)
+
+    # Creación de la figura para graficar
+    plt.figure(figsize=(10, 6))
+
+    # Graficar las 10 primeras filas de 'reflectancia'
+    for index, row in reflectancia.iloc[:NO_firmas].iterrows():
+        plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1 - 3}')  # Ajuste de index por la omisión de las primeras filas
+
+    # Configuración de la gráfica
+    plt.xlabel('Longitud de Onda')
+    plt.ylabel('Reflectancia')
+    plt.title('Curvas de Reflectancia')
+    #plt.legend()
     plt.show()
