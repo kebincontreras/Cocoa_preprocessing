@@ -60,11 +60,14 @@ def graficar_reflectancia(lote, wavelengths,NO_firmas):
 
     # Graficar las 10 primeras filas de 'reflectancia'
     for index, row in reflectancia.iloc[:NO_firmas].iterrows():
-        plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1 - 3}')  # Ajuste de index por la omisión de las primeras filas
+        #plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1 - 3}') 
+        plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1}')
 
     # Configuración de la gráfica
     plt.xlabel('Longitud de Onda')
     plt.ylabel('Reflectancia')
     plt.title('Curvas de Reflectancia')
+    plt.xlim([450, 900])
+    plt.ylim([0, 1])
     #plt.legend()
     plt.show()
