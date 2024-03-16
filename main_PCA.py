@@ -15,10 +15,15 @@ nombres_etiquetas = ["D 0.82", "D 0.82","D 0.82","D 0.82", "F 0.89", "F 0.89", "
 # Lista para almacenar los DataFrames de reflectancia
 lista_reflectancias = []
 
+
 for nombre_lote in nombres_lotes:
     lote, blanco_saturado, blanco_ref, wavelengths = cargar_datos(ruta_base, "BLANCO_1.csv", nombre_lote)
-    reflectancia = graficar_reflectancia(lote, wavelengths, 200)  # Asume que esta función devuelve el DataFrame de reflectancia
+    titulo = nombre_lote.split('.')[0]  # Esto asume que deseas usar el nombre del archivo sin la extensión como título
+    reflectancia = graficar_reflectancia(lote, wavelengths, 200, titulo)  # Asume que esta función devuelve el DataFrame de reflectancia
     lista_reflectancias.append(reflectancia)
 
-preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.999, random_state=42)
+
+
+
+preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.9995, random_state=42)
 graficar_firmas_medias(lista_reflectancias, wavelengths, nombres_etiquetas)
