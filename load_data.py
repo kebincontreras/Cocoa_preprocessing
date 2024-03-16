@@ -7,23 +7,24 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
+import os
+from datetime import datetime
 
+def crear_directorio_resultados():
+    base_dir = "Result"
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    path = os.path.join(base_dir, timestamp)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
-
     ruta_blanco = f"{ruta_base}/{nombre_blanco}"
     ruta_lote = f"{ruta_base}/{nombre_lote}"
-    
     blanco = pd.read_csv(ruta_blanco, header=None)
     lote = pd.read_csv(ruta_lote, header=None)
-    
-    # Extracción de blanco_ref y wavelengths
     blanco_ref = blanco.iloc[1, :]
     wavelengths = blanco.iloc[0, :]
-    
-    # Cálculo de blanco saturado (segunda fila del lote)
     blanco_saturado = lote.iloc[1, :]
-
     return lote, blanco_saturado, blanco_ref, wavelengths
 
 
@@ -53,36 +54,26 @@ def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, 
     plt.show(block=False)
 
 
-def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo):
-    # Extracción de las mediciones necesarias del DataFrame
+def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
     I_negro = lote.iloc[2, :]
     I_blanco = lote.iloc[1, :]
     I_muestra = lote.iloc[3:, :]
-
-    # Cálculo de la reflectancia para cada muestra
     reflectancia = (I_muestra - I_negro) / (I_blanco - I_negro)
-
-    # Creación de la figura para graficar
     plt.figure(figsize=(10, 6))
-
-    # Graficar las primeras NO_firmas filas de 'reflectancia'
     for index, row in reflectancia.iloc[:NO_firmas].iterrows():
         plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1}')
-
-    # Configuración de la gráfica
     plt.xlabel('Longitud de Onda')
     plt.ylabel('Reflectancia')
-    plt.title(titulo)  # Usar el argumento 'titulo' para el título del gráfico
+    plt.title(titulo)
     plt.xlim([450, 900])
     plt.ylim([0, 1])
-    #plt.legend()
-    plt.show(block=False)
-
+    plt.savefig(os.path.join(save_path, f"{titulo}.png"))
+    plt.close()
     return reflectancia
 
 
 
-def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas):
+def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas, save_path):
     if len(lista_reflectancias) != len(lista_etiquetas):
         raise ValueError("El número de conjuntos de datos de reflectancia y etiquetas debe coincidir.")
     
@@ -115,10 +106,11 @@ def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas):
     plt.title('PCA de Reflectancia')
     plt.xlim([-50, 100])
     plt.ylim([-50, 50])
-    plt.show()
+    plt.savefig(os.path.join(save_path, "PCA.png"))
+    #plt.show()
+    plt.close
 
-
-def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas):
+def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_path):
     plt.figure(figsize=(10, 6))
     
     # Asumiendo que 'wavelengths' es un pandas Series o un ndarray que necesita ser convertido para comparación
@@ -146,19 +138,14 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas):
     plt.ylabel('Reflectancia Media')
     plt.title('Firmas Espectrales Medias de Reflectancia por Etiqueta')
     plt.legend()
-    plt.show()
-
-
-
+    plt.savefig(os.path.join(save_path, "Firmas_Medias.png"))
+    #plt.show()
+    plt.close
 
 def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.999, random_state=42):
     # Concatenar todos los DataFrames de reflectancia en uno solo y preparar las etiquetas
     datos = pd.concat(lista_reflectancias, ignore_index=True)
     etiquetas = np.repeat(nombres_etiquetas, [len(df) for df in lista_reflectancias])
-
-    # Opcional: Realizar PCA y graficar los resultados
-    if realizar_pca:
-        realizar_y_graficar_pca_con_listas(lista_reflectancias, nombres_etiquetas)
 
     # Preparar los datos para el entrenamiento del modelo SVC
     # Imputación de valores NaN en los datos
