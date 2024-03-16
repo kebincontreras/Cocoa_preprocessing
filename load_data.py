@@ -142,7 +142,7 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_pat
     #plt.show()
     plt.close
 
-def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.999, random_state=42):
+def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.95, random_state=42):
     # Concatenar todos los DataFrames de reflectancia en uno solo y preparar las etiquetas
     datos = pd.concat(lista_reflectancias, ignore_index=True)
     etiquetas = np.repeat(nombres_etiquetas, [len(df) for df in lista_reflectancias])

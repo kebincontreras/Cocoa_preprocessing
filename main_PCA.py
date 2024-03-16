@@ -16,7 +16,7 @@ for nombre_lote in nombres_lotes:
 
 realizar_y_graficar_pca_con_listas(lista_reflectancias, nombres_etiquetas, save_path)
 graficar_firmas_medias(lista_reflectancias, wavelengths, nombres_etiquetas, save_path)
-preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.9995, random_state=42)
+preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.95, random_state=42)
 
 
 
