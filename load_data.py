@@ -17,6 +17,7 @@ def crear_directorio_resultados():
     os.makedirs(path, exist_ok=True)
     return path
 
+'''
 def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     ruta_blanco = f"{ruta_base}/{nombre_blanco}"
     ruta_lote = f"{ruta_base}/{nombre_lote}"
@@ -26,6 +27,32 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     wavelengths = blanco.iloc[0, :]
     blanco_saturado = lote.iloc[1, :]
     return lote, blanco_saturado, blanco_ref, wavelengths
+'''
+def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
+    ruta_blanco = f"{ruta_base}/{nombre_blanco}"
+    ruta_lote = f"{ruta_base}/{nombre_lote}"
+    blanco = pd.read_csv(ruta_blanco, header=None)
+    lote = pd.read_csv(ruta_lote, header=None)
+    
+    # Extraer los valores de longitud de onda
+    wavelengths = blanco.iloc[0, :]
+    
+    # Identificar las columnas dentro del rango deseado
+    columnas_dentro_del_rango = (wavelengths >= 400) & (wavelengths <= 500)
+    
+    # Filtrar los DataFrames para incluir solo las columnas dentro del rango deseado
+    blanco_filtrado = blanco.loc[:, columnas_dentro_del_rango]
+    lote_filtrado = lote.loc[:, columnas_dentro_del_rango]
+    
+    # Actualizar 'blanco_ref' y 'blanco_saturado' para que solo incluyan las columnas filtradas
+    blanco_ref = blanco_filtrado.iloc[1, :]
+    blanco_saturado = lote_filtrado.iloc[1, :]
+    
+    # Asegurarse de que 'wavelengths' también esté filtrado
+    wavelengths = blanco_filtrado.iloc[0, :]
+
+    return lote_filtrado, blanco_saturado, blanco_ref, wavelengths
+
 
 
 def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, num_firmas):
@@ -65,7 +92,7 @@ def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
     plt.xlabel('Longitud de Onda')
     plt.ylabel('Reflectancia')
     plt.title(titulo)
-    plt.xlim([450, 900])
+    plt.xlim([300, 1000])
     plt.ylim([0, 1])
     plt.savefig(os.path.join(save_path, f"{titulo}.png"))
     plt.close()
@@ -136,7 +163,7 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_pat
     # Configuración de la gráfica
     plt.xlabel('Longitud de Onda (nm)')
     plt.ylabel('Reflectancia Media')
-    plt.title('Firmas Espectrales Medias de Reflectancia por Etiqueta')
+    plt.title('Firmas media de Reflectancia')
     plt.legend()
     plt.savefig(os.path.join(save_path, "Firmas_Medias.png"))
     #plt.show()
