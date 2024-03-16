@@ -4,6 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
@@ -116,5 +119,71 @@ def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas):
     plt.xlim([-50, 100])
     plt.ylim([-50, 50])
     plt.show()
+
+
+def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas):
+    plt.figure(figsize=(10, 6))
+    
+    # Asumiendo que 'wavelengths' es un pandas Series o un ndarray que necesita ser convertido para comparación
+    wavelengths = np.array(wavelengths)
+    
+    # Filtrar índices de longitudes de onda en el rango de 450 a 900
+    indices = (wavelengths >= 450) & (wavelengths <= 900)
+    
+    # Colores para las gráficas
+    colores = plt.cm.jet(np.linspace(0, 1, len(lista_reflectancias)))
+    
+    # Calcular y graficar la firma media para cada lote
+    for i, (df, etiqueta) in enumerate(zip(lista_reflectancias, etiquetas)):
+        # Filtrar las columnas de reflectancia por longitudes de onda
+        df_filtrado = df.iloc[:, indices]
+        
+        # Calcular la firma media
+        firma_media = df_filtrado.mean()
+        
+        # Graficar
+        plt.plot(wavelengths[indices], firma_media, label=etiqueta, color=colores[i])
+    
+    # Configuración de la gráfica
+    plt.xlabel('Longitud de Onda (nm)')
+    plt.ylabel('Reflectancia Media')
+    plt.title('Firmas Espectrales Medias de Reflectancia por Etiqueta')
+    plt.legend()
+    plt.show()
+
+
+
+
+def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.999, random_state=42):
+    # Concatenar todos los DataFrames de reflectancia en uno solo y preparar las etiquetas
+    datos = pd.concat(lista_reflectancias, ignore_index=True)
+    etiquetas = np.repeat(nombres_etiquetas, [len(df) for df in lista_reflectancias])
+
+    # Opcional: Realizar PCA y graficar los resultados
+    if realizar_pca:
+        realizar_y_graficar_pca_con_listas(lista_reflectancias, nombres_etiquetas)
+
+    # Preparar los datos para el entrenamiento del modelo SVC
+    # Imputación de valores NaN en los datos
+    imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    datos_imputados = imputer.fit_transform(datos)
+
+    # Estandarización de los datos imputados
+    scaler = StandardScaler()
+    datos_escalados = scaler.fit_transform(datos_imputados)
+
+    # Dividir los datos en conjuntos de entrenamiento y prueba
+    X_train, X_test, y_train, y_test = train_test_split(datos_escalados, etiquetas, test_size=test_size, random_state=random_state)
+
+    # Entrenar el modelo SVC
+    svc_model = SVC(kernel='linear')  # Ajustar el kernel según sea necesario
+    svc_model.fit(X_train, y_train)
+
+    # Realizar predicciones y evaluar el modelo
+    y_pred = svc_model.predict(X_test)
+    print("Matriz de Confusión:")
+    print(confusion_matrix(y_test, y_pred))
+    print("\nReporte de Clasificación:")
+    print(classification_report(y_test, y_pred))
 
 
