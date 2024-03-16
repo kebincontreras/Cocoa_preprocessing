@@ -75,7 +75,7 @@ def graficar_reflectancia(lote, wavelengths,NO_firmas):
     plt.xlim([450, 900])
     plt.ylim([0, 1])
     #plt.legend()
-    plt.show()
+    plt.show(block=False)
 
     return reflectancia
 
@@ -113,6 +113,8 @@ def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas):
     plt.ylabel('Componente Principal 2')
     plt.legend()
     plt.title('PCA de Reflectancia')
+    plt.xlim([-50, 100])
+    plt.ylim([-50, 50])
     plt.show()
 
 

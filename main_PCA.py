@@ -36,7 +36,7 @@ import numpy as np
 
 # Definir la ruta base y los nombres de los archivos
 ruta_base = "C:/Users/USUARIO/Documents/dataset_cocoa_hdsp"
-nombres_lotes = ["LOTE3EJ_1.csv", "LOTE4EJ_2.csv", "LOTE6EJ1.csv", "LOTE2EJ_A_1"]
+nombres_lotes = ["LOTE3EJ_3.csv", "LOTE4EJ_2.csv", "LOTE6EJ4.csv", "LOTE2EJ_A_1.csv"]
 nombres_etiquetas = ["D 0.82", "F 0.89", "C 0.82", "A 0.50"]
 
 # Lista para almacenar los DataFrames de reflectancia
