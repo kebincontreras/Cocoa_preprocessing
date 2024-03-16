@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 ruta_base = "C:/Users/USUARIO/Documents/dataset_cocoa_hdsp"
-nombres_lotes = ["LOTE3EJ_1.csv", "LOTE3EJ_2.csv", "LOTE3EJ_3.csv", "LOTE3EJ_4.csv", "LOTE4EJ_1.csv", "LOTE4EJ_2.csv","LOTE4EJ_3.csv","LOTE4EJ_4.csv", "LOTE6EJ1.csv","LOTE6EJ2.csv","LOTE6EJ3.csv","LOTE6EJ4.csv", "LOTE2EJ_A_1.csv", "LOTE2EJ_A_2.csv"]
+nombres_lotes = ["D_82_1.csv", "D_82_2.csv", "D_82_3.csv", "D_82_4.csv", "F_89_1.csv", "F_89_2.csv","F_89_3.csv","F_89_4.csv", "C_82_1.csv","C_82_2.csv","C_82_3.csv","C_82_4.csv", "A_50_1.csv", "A_50_2.csv"]
 nombres_etiquetas = ["D 0.82", "D 0.82","D 0.82","D 0.82", "F 0.89", "F 0.89", "F 0.89", "F 0.89", "C 0.82", "C 0.82", "C 0.82", "C 0.82", "A 0.50" , "A 0.50"]
 lista_reflectancias = []
 save_path = crear_directorio_resultados()
