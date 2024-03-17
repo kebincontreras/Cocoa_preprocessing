@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 import os
 from datetime import datetime
+from sklearn.manifold import TSNE
 
 def crear_directorio_resultados():
     base_dir = "Result"
@@ -17,17 +18,6 @@ def crear_directorio_resultados():
     os.makedirs(path, exist_ok=True)
     return path
 
-'''
-def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
-    ruta_blanco = f"{ruta_base}/{nombre_blanco}"
-    ruta_lote = f"{ruta_base}/{nombre_lote}"
-    blanco = pd.read_csv(ruta_blanco, header=None)
-    lote = pd.read_csv(ruta_lote, header=None)
-    blanco_ref = blanco.iloc[1, :]
-    wavelengths = blanco.iloc[0, :]
-    blanco_saturado = lote.iloc[1, :]
-    return lote, blanco_saturado, blanco_ref, wavelengths
-'''
 def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     ruta_blanco = f"{ruta_base}/{nombre_blanco}"
     ruta_lote = f"{ruta_base}/{nombre_lote}"
@@ -38,7 +28,7 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     wavelengths = blanco.iloc[0, :]
     
     # Identificar las columnas dentro del rango deseado
-    columnas_dentro_del_rango = (wavelengths >= 680) & (wavelengths <= 683)
+    columnas_dentro_del_rango = (wavelengths >= 450) & (wavelengths <= 900)
     
     # Filtrar los DataFrames para incluir solo las columnas dentro del rango deseado
     blanco_filtrado = blanco.loc[:, columnas_dentro_del_rango]
@@ -131,8 +121,8 @@ def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas, sav
     plt.ylabel('Componente Principal 2')
     plt.legend()
     plt.title('PCA de Reflectancia')
-    plt.xlim([-50, 100])
-    plt.ylim([-50, 50])
+    #plt.xlim([-50, 100])
+    #plt.ylim([-50, 50])
     plt.savefig(os.path.join(save_path, "PCA.png"))
     #plt.show()
     plt.close
@@ -196,5 +186,45 @@ def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca
     print(confusion_matrix(y_test, y_pred))
     print("\nReporte de Clasificación:")
     print(classification_report(y_test, y_pred))
+
+
+def realizar_y_graficar_tsne_con_listas(lista_reflectancias, lista_etiquetas, save_path, n_components=2, perplexity=30.0, learning_rate=200.0, n_iter=1000, random_state=None):
+    if len(lista_reflectancias) != len(lista_etiquetas):
+        raise ValueError("El número de conjuntos de datos de reflectancia y etiquetas debe coincidir.")
+    
+    # Concatenar todos los DataFrames de reflectancia en uno solo
+    datos = pd.concat(lista_reflectancias, ignore_index=True)
+    
+    # Preparar las etiquetas
+    etiquetas = []
+    for reflectancia, etiqueta in zip(lista_reflectancias, lista_etiquetas):
+        etiquetas.extend([etiqueta] * len(reflectancia))
+    
+    # Imputación de valores faltantes
+    imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    datos_imputados = imputer.fit_transform(datos)
+    
+    # Estandarización de los datos antes de t-SNE
+    datos_escalados = StandardScaler().fit_transform(datos_imputados)
+    
+    # Aplicar t-SNE
+    tsne = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, n_iter=n_iter, random_state=random_state)
+    tsne_resultados = tsne.fit_transform(datos_escalados)
+    
+    # Graficar los resultados de t-SNE
+    df_tsne = pd.DataFrame(data=tsne_resultados, columns=['Dimension 1', 'Dimension 2'])
+    df_tsne['Etiqueta'] = etiquetas
+    
+    plt.figure(figsize=(8, 6))
+    for etiqueta in set(etiquetas):
+        indices = df_tsne['Etiqueta'] == etiqueta
+        plt.scatter(df_tsne.loc[indices, 'Dimension 1'], df_tsne.loc[indices, 'Dimension 2'], label=etiqueta, alpha=0.5)
+    plt.xlabel('Dimensión 1')
+    plt.ylabel('Dimensión 2')
+    plt.legend()
+    plt.title('t-SNE de Reflectancia')
+    plt.savefig(os.path.join(save_path, "t-SNE.png"))
+    plt.close()
+
 
 
