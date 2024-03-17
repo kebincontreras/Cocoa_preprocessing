@@ -38,7 +38,7 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     wavelengths = blanco.iloc[0, :]
     
     # Identificar las columnas dentro del rango deseado
-    columnas_dentro_del_rango = (wavelengths >= 400) & (wavelengths <= 500)
+    columnas_dentro_del_rango = (wavelengths >= 680) & (wavelengths <= 683)
     
     # Filtrar los DataFrames para incluir solo las columnas dentro del rango deseado
     blanco_filtrado = blanco.loc[:, columnas_dentro_del_rango]
@@ -144,7 +144,7 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_pat
     wavelengths = np.array(wavelengths)
     
     # Filtrar índices de longitudes de onda en el rango de 450 a 900
-    indices = (wavelengths >= 450) & (wavelengths <= 900)
+    indices = (wavelengths >= 400) & (wavelengths <= 1000)
     
     # Colores para las gráficas
     colores = plt.cm.jet(np.linspace(0, 1, len(lista_reflectancias)))

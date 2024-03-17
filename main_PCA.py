@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 
 ruta_base = "C:/Users/USUARIO/Documents/dataset_cocoa_hdsp"
-#nombres_lotes = ["D_82_1.csv", "D_82_2.csv", "D_82_3.csv", "D_82_4.csv", "F_89_1.csv", "F_89_2.csv","F_89_3.csv","F_89_4.csv", "C_82_1.csv","C_82_2.csv","C_82_3.csv","C_82_4.csv", "A_50_1.csv", "A_50_2.csv"]
-#nombres_etiquetas = ["D 0.82", "D 0.82","D 0.82","D 0.82", "F 0.89", "F 0.89", "F 0.89", "F 0.89", "C 0.82", "C 0.82", "C 0.82", "C 0.82", "A 0.50" , "A 0.50"]
+nombres_lotes = ["D_82_1.csv", "D_82_2.csv", "D_82_3.csv", "D_82_4.csv", "F_89_1.csv", "F_89_2.csv","F_89_3.csv","F_89_4.csv", "C_82_1.csv","C_82_2.csv","C_82_3.csv","C_82_4.csv", "A_50_1.csv", "A_50_2.csv"]
+nombres_etiquetas = ["D 0.82", "D 0.82","D 0.82","D 0.82", "F 0.89", "F 0.89", "F 0.89", "F 0.89", "C 0.82", "C 0.82", "C 0.82", "C 0.82", "A 0.50" , "A 0.50"]
 
 
-nombres_lotes = ["D_82_4.csv","F_89_4.csv", "A_50_2.csv"]
-nombres_etiquetas = ["D 0.82", "F 0.89", "A 0.50"]
+#nombres_lotes = ["D_82_4.csv","F_89_4.csv", "A_50_2.csv"]
+#nombres_etiquetas = ["D 0.82", "F 0.89", "A 0.50"]
 
 lista_reflectancias = []
 save_path = crear_directorio_resultados()
@@ -21,7 +21,7 @@ for nombre_lote in nombres_lotes:
 
 realizar_y_graficar_pca_con_listas(lista_reflectancias, nombres_etiquetas, save_path)
 graficar_firmas_medias(lista_reflectancias, wavelengths, nombres_etiquetas, save_path)
-preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.95, random_state=42)
+preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.99, random_state=42)
 
 
 
