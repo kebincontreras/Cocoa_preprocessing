@@ -1,4 +1,4 @@
-from load_data import cargar_datos, graficar_reflectancia, preparar_evaluar_modelo, crear_directorio_resultados, graficar_firmas_medias, realizar_y_graficar_pca_con_listas, realizar_y_graficar_tsne_con_listas
+from load_data import cargar_datos, graficar_firmas_espectrales, graficar_reflectancia, preparar_evaluar_modelo, crear_directorio_resultados, graficar_firmas_medias, realizar_y_graficar_pca_con_listas, realizar_y_graficar_tsne_con_listas
 import pandas as pd
 import numpy as np
 
@@ -18,6 +18,7 @@ for nombre_lote in nombres_lotes:
     titulo = nombre_lote.split('.')[0]
     reflectancia = graficar_reflectancia(lote, wavelengths, 200, titulo, save_path)
     lista_reflectancias.append(reflectancia)
+    graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, 200, titulo, save_path)
 
 realizar_y_graficar_pca_con_listas(lista_reflectancias, nombres_etiquetas, save_path)
 realizar_y_graficar_tsne_con_listas(lista_reflectancias, nombres_etiquetas, save_path, n_components=2, perplexity=30.0, learning_rate=200.0, n_iter=1000, random_state=42)

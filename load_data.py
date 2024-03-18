@@ -43,39 +43,57 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
 
     return lote_filtrado, blanco_saturado, blanco_ref, wavelengths
 
+def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, num_firmas, titulo, save_path):
+    # Crea la ruta para la nueva carpeta dentro de save_path llamada "Firmas_espectral"
+    new_save_path = os.path.join(save_path, "Firmas_espectral")
+    
+    # Verifica si la carpeta existe, si no, la crea
+    if not os.path.exists(new_save_path):
+        os.makedirs(new_save_path)
 
-
-def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, num_firmas):
-   
-    # Cálculo del factor de escala y ajuste
-    factor_de_escala = lote.iloc[1, 1608] / blanco_ref.iloc[1608]
+    # Cálculo del factor de escala y ajuste para el blanco
+    factor_de_escala = lote.iloc[2, :].max() / blanco_ref.max()  # Ajusta esta línea según tu lógica de escala
     blanco_escalado = blanco_ref * factor_de_escala
 
-    # Visualización de blanco escalado vs. blanco saturado
-    plt.figure()
-    plt.plot(wavelengths, blanco_escalado, label='Blanco escalado')
-    plt.plot(wavelengths, blanco_saturado, label='Blanco saturado')
+    # Gráfica de blanco escalado vs. blanco saturado
+    plt.figure(figsize=(10, 6))
+    plt.plot(wavelengths, blanco_escalado, label='Blanco escalado', color='black', linewidth=2)
+    plt.plot(wavelengths, blanco_saturado, label='Blanco saturado', color='grey', linestyle='--')
+    plt.title(f'{titulo} - Blanco escalado vs. Blanco saturado')
+    plt.xlabel('Longitud de Onda (nm)')
+    plt.ylabel('Intensidad')
     plt.legend()
-    plt.show(block=False)
+    plt.savefig(os.path.join(new_save_path, f"{titulo}_Blanco_Escalado_vs_Saturado.png"))
+    plt.close()
 
-    # Visualización de firmas espectrales seleccionadas del lote contra el blanco escalado
-    plt.figure()
-    plt.plot(wavelengths, blanco_escalado, label='Blanco escalado', linewidth=2, color='k')
+    # Gráfica de firmas espectrales de las muestras
+    plt.figure(figsize=(10, 6))
+    for i in range(3, 3 + num_firmas):  # Ajusta los índices según tus datos
+        plt.plot(wavelengths, lote.iloc[i, :], label=f'Muestra {i - 2}')
+    plt.title(f'{titulo} - Firmas espectrales')
+    plt.xlabel('Longitud de Onda (nm)')
+    plt.ylabel('Intensidad')
+    plt.legend(loc='upper right')
+    plt.savefig(os.path.join(new_save_path, f"{titulo}_Firmas_Espectrales.png"))
+    plt.close()
 
-    # Asegurar que no se intenta graficar más firmas de las disponibles
-    num_firmas = min(num_firmas, lote.shape[0] - 3)
 
-    for i in range(3, 3 + num_firmas):
-        plt.plot(wavelengths, lote.iloc[i, :], label=f'Firma LOTE - Muestra {i}')
 
-    plt.show(block=False)
 
 
 def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
+    # Ruta para la nueva carpeta dentro de save_path
+    new_save_path = os.path.join(save_path, "reflectancia")
+    
+    # Verificar si la carpeta existe, si no, crearla
+    if not os.path.exists(new_save_path):
+        os.makedirs(new_save_path)
+    
     I_negro = lote.iloc[2, :]
     I_blanco = lote.iloc[1, :]
     I_muestra = lote.iloc[3:, :]
     reflectancia = (I_muestra - I_negro) / (I_blanco - I_negro)
+    
     plt.figure(figsize=(10, 6))
     for index, row in reflectancia.iloc[:NO_firmas].iterrows():
         plt.plot(wavelengths, row, linestyle='-', marker='', linewidth=1, label=f'Muestra {index + 1}')
@@ -84,10 +102,12 @@ def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
     plt.title(titulo)
     plt.xlim([300, 1000])
     plt.ylim([0, 1])
-    plt.savefig(os.path.join(save_path, f"{titulo}.png"))
+    
+    # Guardar la figura en la nueva ruta
+    plt.savefig(os.path.join(new_save_path, f"{titulo}.png"))
     plt.close()
+    
     return reflectancia
-
 
 
 def realizar_y_graficar_pca_con_listas(lista_reflectancias, lista_etiquetas, save_path):
