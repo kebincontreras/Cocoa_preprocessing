@@ -25,7 +25,7 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     lote = pd.read_csv(ruta_lote, header=None)
     
     # Extraer los valores de longitud de onda
-    wavelengths = blanco.iloc[0, :]
+    wavelengths = lote.iloc[0, :]
     
     # Identificar las columnas dentro del rango deseado
     columnas_dentro_del_rango = (wavelengths >= 450) & (wavelengths <= 900)
@@ -35,11 +35,11 @@ def cargar_datos(ruta_base, nombre_blanco, nombre_lote):
     lote_filtrado = lote.loc[:, columnas_dentro_del_rango]
     
     # Actualizar 'blanco_ref' y 'blanco_saturado' para que solo incluyan las columnas filtradas
-    blanco_ref = blanco_filtrado.iloc[1, :]
+    blanco_ref = blanco_filtrado.iloc[0, :]
     blanco_saturado = lote_filtrado.iloc[1, :]
-    
+
     # Asegurarse de que 'wavelengths' también esté filtrado
-    wavelengths = blanco_filtrado.iloc[0, :]
+    wavelengths = lote_filtrado.iloc[0, :]
 
     return lote_filtrado, blanco_saturado, blanco_ref, wavelengths
 
@@ -52,18 +52,24 @@ def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, 
         os.makedirs(new_save_path)
 
     # Cálculo del factor de escala y ajuste para el blanco
-    factor_de_escala = lote.iloc[2, :].max() / blanco_ref.max()  # Ajusta esta línea según tu lógica de escala
-    blanco_escalado = blanco_ref * factor_de_escala
+    #factor_de_escala = lote.iloc[2, :].max() / blanco_ref.max()  # Ajusta esta línea según tu lógica de escala
+    #blanco_escalado = blanco_ref * factor_de_escala
+
+    #factor_de_escala = 
+    blanco_escalado = blanco_ref
+
+
+
 
     # Gráfica de blanco escalado vs. blanco saturado
     plt.figure(figsize=(10, 6))
-    plt.plot(wavelengths, blanco_escalado, label='Blanco escalado', color='black', linewidth=2)
+    plt.plot(wavelengths, blanco_escalado, label='Blanco_referencia', color='black', linewidth=2)
     plt.plot(wavelengths, blanco_saturado, label='Blanco saturado', color='grey', linestyle='--')
-    plt.title(f'{titulo} - Blanco escalado vs. Blanco saturado')
+    plt.title(f'{titulo} - Blanco referencia vs. Blanco saturado')
     plt.xlabel('Longitud de Onda (nm)')
     plt.ylabel('Intensidad')
     plt.legend()
-    plt.savefig(os.path.join(new_save_path, f"{titulo}_Blanco_Escalado_vs_Saturado.png"))
+    plt.savefig(os.path.join(new_save_path, f"{titulo}_Blanco_Referencia_vs_Saturado.png"))
     plt.close()
 
     # Gráfica de firmas espectrales de las muestras
@@ -81,7 +87,7 @@ def graficar_firmas_espectrales(blanco_ref, lote, wavelengths, blanco_saturado, 
 
 
 
-def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
+def graficar_reflectancia(lote, blanco_ref, wavelengths, NO_firmas, titulo, save_path):
     # Ruta para la nueva carpeta dentro de save_path
     new_save_path = os.path.join(save_path, "reflectancia")
     
@@ -90,7 +96,8 @@ def graficar_reflectancia(lote, wavelengths, NO_firmas, titulo, save_path):
         os.makedirs(new_save_path)
     
     I_negro = lote.iloc[2, :]
-    I_blanco = lote.iloc[1, :]
+    #I_blanco = lote.iloc[1, :]
+    I_blanco = blanco_ref
     I_muestra = lote.iloc[3:, :]
     reflectancia = (I_muestra - I_negro) / (I_blanco - I_negro)
     
@@ -154,7 +161,7 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_pat
     wavelengths = np.array(wavelengths)
     
     # Filtrar índices de longitudes de onda en el rango de 450 a 900
-    indices = (wavelengths >= 400) & (wavelengths <= 1000)
+    indices = (wavelengths >= 400) & (wavelengths <= 900)
     
     # Colores para las gráficas
     colores = plt.cm.jet(np.linspace(0, 1, len(lista_reflectancias)))
@@ -179,7 +186,7 @@ def graficar_firmas_medias(lista_reflectancias, wavelengths, etiquetas, save_pat
     #plt.show()
     plt.close
 
-def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.95, random_state=42):
+def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca=True, test_size=0.95, random_state=42, save_path=None):
     # Concatenar todos los DataFrames de reflectancia en uno solo y preparar las etiquetas
     datos = pd.concat(lista_reflectancias, ignore_index=True)
     etiquetas = np.repeat(nombres_etiquetas, [len(df) for df in lista_reflectancias])
@@ -206,6 +213,19 @@ def preparar_evaluar_modelo(lista_reflectancias, nombres_etiquetas, realizar_pca
     print(confusion_matrix(y_test, y_pred))
     print("\nReporte de Clasificación:")
     print(classification_report(y_test, y_pred))
+
+    # Guardar las métricas en un archivo de texto si se proporciona un path de guardado
+    if save_path is not None:
+        with open(save_path, "w") as f:
+            f.write("Matriz de Confusión:\n")
+            f.write(str(confusion_matrix(y_test, y_pred)))
+            f.write("\n\nReporte de Clasificación:\n")
+            f.write(classification_report(y_test, y_pred))
+
+
+
+
+
 
 
 def realizar_y_graficar_tsne_con_listas(lista_reflectancias, lista_etiquetas, save_path, n_components=2, perplexity=30.0, learning_rate=200.0, n_iter=1000, random_state=None):
