@@ -57,6 +57,48 @@ def dividir_visualizar_imagen(datos, etiquetas, porcentaje_train=0.5):
     
     return archivo_train, archivo_test
 
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+import os
+
+def procesar_datos(archivo_train, archivo_test, ruta_guardado, test_size_val=0.5, estandarizar=True):
+    # Cargar los DataFrames desde los archivos CSV
+    df_train = pd.read_csv(archivo_train)
+    df_test = pd.read_csv(archivo_test)
+
+    # Separar características (X) y etiquetas (y)
+    Xtrain = df_train.drop('Etiqueta', axis=1)
+    Ytrain = df_train['Etiqueta']
+    Xtest = df_test.drop('Etiqueta', axis=1)
+    Ytest = df_test['Etiqueta']
+
+    # Dividir Xtest y Ytest en conjuntos de validación y test
+    Xtest, Xval, Ytest, Yval = train_test_split(Xtest, Ytest, test_size=test_size_val, random_state=42)
+
+    # Opcional: Estandarizar los datos
+    if estandarizar:
+        scaler = StandardScaler()
+        Xtrain = scaler.fit_transform(Xtrain)
+        Xtest = scaler.transform(Xtest)
+        Xval = scaler.transform(Xval)
+
+    # Crear la carpeta si no existe
+    if not os.path.exists(ruta_guardado):
+        os.makedirs(ruta_guardado)
+
+    # Guardar los conjuntos de datos en archivos .npy
+    np.save(os.path.join(ruta_guardado, 'Xtrain.npy'), Xtrain)
+    np.save(os.path.join(ruta_guardado, 'Ytrain.npy'), Ytrain)
+    np.save(os.path.join(ruta_guardado, 'Xtest.npy'), Xtest)
+    np.save(os.path.join(ruta_guardado, 'Ytest.npy'), Ytest)
+    np.save(os.path.join(ruta_guardado, 'Xval.npy'), Xval)
+    np.save(os.path.join(ruta_guardado, 'Yval.npy'), Yval)
+
+
+
+
 # Usar la función y especificar la ruta al archivo .mat y el porcentaje de división deseado
 archivo_mat = "C:/Users/USUARIO/Documents/GitHub/dataset_HDSP_cocoa_karen_sanchez/data_for_classification.mat"
 datos = scipy.io.loadmat(archivo_mat)
@@ -66,34 +108,31 @@ mix1_gt = datos['mix1_gt']
 archivo_train, archivo_test = dividir_visualizar_imagen(hyperimg, mix1_gt, porcentaje_train=0.8)
 #print(f"Archivos generados: {archivo_train, archivo_test}")
 
+import numpy as np
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix, classification_report
 
-# Cargar los DataFrames desde los archivos CSV
-df_train = pd.read_csv(archivo_train)
-df_test = pd.read_csv(archivo_test)
+# Suponiendo que los datos ya han sido procesados y guardados en la ruta especificada
+ruta_guardado = './Dataset/cocoa_public'
 
-# Separar características (X) y etiquetas (y)
-Xtrain = df_train.drop('Etiqueta', axis=1)
-Ytrain = df_train['Etiqueta']
-Xtest = df_test.drop('Etiqueta', axis=1)
-Ytest = df_test['Etiqueta']
-
-# Opcional: Estandarizar los datos
-scaler = StandardScaler()
-Xtrain = scaler.fit_transform(X_train)
-Xtest = scaler.transform(X_test)
+# Cargar los conjuntos de datos
+Xtrain = np.load(os.path.join(ruta_guardado, 'Xtrain.npy'))
+Ytrain = np.load(os.path.join(ruta_guardado, 'Ytrain.npy'))
+Xtest = np.load(os.path.join(ruta_guardado, 'Xtest.npy'))
+Ytest = np.load(os.path.join(ruta_guardado, 'Ytest.npy'))
 
 # Entrenar el modelo SVM
 model = SVC(kernel='linear')
-model.fit(X_train, y_train)
+model.fit(Xtrain, Ytrain)
 
 # Realizar predicciones en el conjunto de prueba
-y_pred = model.predict(X_test)
+y_pred = model.predict(Xtest)
 
 # Mostrar las métricas de evaluación y la matriz de confusión
 print("Matriz de Confusión:")
-print(confusion_matrix(y_test, y_pred))
+print(confusion_matrix(Ytest, y_pred))
 print("\nReporte de Clasificación:")
-print(classification_report(y_test, y_pred))
+print(classification_report(Ytest, y_pred))
 
 
 
