@@ -8,6 +8,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.model_selection import train_test_split
+import os
 
 def dividir_visualizar_imagen(datos, etiquetas, porcentaje_train=0.5):
     """
@@ -57,13 +59,9 @@ def dividir_visualizar_imagen(datos, etiquetas, porcentaje_train=0.5):
     
     return archivo_train, archivo_test
 
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-import numpy as np
-import os
 
-def procesar_datos(archivo_train, archivo_test, ruta_guardado, test_size_val=0.5, estandarizar=True):
+
+def procesar_datos(archivo_train, archivo_test, ruta_guardado, test_size_val=0.1, estandarizar=True):
     # Cargar los DataFrames desde los archivos CSV
     df_train = pd.read_csv(archivo_train)
     df_test = pd.read_csv(archivo_test)
@@ -105,23 +103,24 @@ datos = scipy.io.loadmat(archivo_mat)
 hyperimg = datos['hyperimg']
 mix1_gt = datos['mix1_gt']
 
-archivo_train, archivo_test = dividir_visualizar_imagen(hyperimg, mix1_gt, porcentaje_train=0.8)
-#print(f"Archivos generados: {archivo_train, archivo_test}")
+# Paso 1: Dividir y Visualizar los Datos
+archivo_train, archivo_test = dividir_visualizar_imagen(hyperimg, mix1_gt, porcentaje_train=0.5)
 
-import numpy as np
-from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix, classification_report
-
-# Suponiendo que los datos ya han sido procesados y guardados en la ruta especificada
+# Paso 2: Procesar los Datos
+# Asegúrate de especificar la ruta correcta donde quieres guardar los archivos .npy
 ruta_guardado = './Dataset/cocoa_public'
+procesar_datos(archivo_train, archivo_test, ruta_guardado, test_size_val=0.1, estandarizar=True)
 
+# Paso 3: Entrenar el Modelo SVM
 # Cargar los conjuntos de datos
 Xtrain = np.load(os.path.join(ruta_guardado, 'Xtrain.npy'))
 Ytrain = np.load(os.path.join(ruta_guardado, 'Ytrain.npy'))
 Xtest = np.load(os.path.join(ruta_guardado, 'Xtest.npy'))
 Ytest = np.load(os.path.join(ruta_guardado, 'Ytest.npy'))
+Xval = np.load(os.path.join(ruta_guardado, 'Xval.npy'))  # Si necesitas usarlo más adelante
+Yval = np.load(os.path.join(ruta_guardado, 'Yval.npy'))  # Si necesitas usarlo más adelante
 
-# Entrenar el modelo SVM
+# Entrenar el modelo
 model = SVC(kernel='linear')
 model.fit(Xtrain, Ytrain)
 
