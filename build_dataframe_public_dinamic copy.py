@@ -29,7 +29,7 @@ def dividir_visualizar_imagen(datos, etiquetas, porcentaje_train=0.5):
     plt.imshow(etiquetas, cmap=cmp_personalizado)
     plt.axvline(x=corte, color='r', linestyle='--')
     plt.colorbar(ticks=[0, 1, 2, 3])
-    plt.title("División de la Imagen Hiperespectral")
+    plt.title("Hyperspectral Image Division")
     plt.show()
 
     # Dividir y reestructurar los datos y etiquetas
