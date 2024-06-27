@@ -10,7 +10,7 @@ base_dir = "C:\\Users\\USUARIO\\Documents\\GitHub\\Preprocessing"
 banda_dir = os.path.join(base_dir, "Anexos")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
 results_dir = os.path.join(base_dir, "Results")
-muestra_dir = os.path.join(results_dir, "lote_1_umbral_2000")
+muestra_dir = os.path.join(results_dir, "lote_1_final")
 processed_dir = os.path.join(muestra_dir, "Processed")
 delete_dir = os.path.join(muestra_dir, "Delete")
 
@@ -24,11 +24,20 @@ BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BAND
 wavelengths = BANDA[0, :]
 BANDA = BANDA[1:]
 
+
+############################### TRAINT  ###############################
 LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
+
+############################### TEST  ###############################
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TESTFULL.mat"))['LCACAO']
 
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[1:]
 
@@ -55,58 +64,43 @@ sam_mask_matrix = np.tile(sam_mask[:, None], (1, LOTE_PARA_FILTRAR.shape[1]))
 firmas_seleccionadas = LOTE_PARA_FILTRAR[sam_mask == 1]
 firmas_delete = LOTE_PARA_FILTRAR[sam_mask == 0]
 
-# Visualización inicial de las firmas del lote
-plt.figure(figsize=(10, 6))
+# Generar subplots para mostrar las máscaras y los datos
+plt.figure(figsize=(12, 8))
+plt.subplot(3, 3, 1)
+#plt.imshow(BANDA[:4000], aspect='auto')
+#plt.imshow(BANDA[:4000])
+plt.imshow(BANDA[:1000])
+plt.title('BANDA')
+plt.subplot(3, 3, 2)
+#plt.imshow(LOTE_PARA_FILTRAR[:4000], aspect='auto')
+#plt.imshow(LOTE_PARA_FILTRAR[:4000])
+plt.imshow(LOTE_PARA_FILTRAR[:1000])
+plt.title('LOTE PARA FILTRAR')
+plt.subplot(3, 3, 3)
+#plt.imshow(sam_mask_matrix[:4000], aspect='auto')
+#plt.imshow(sam_mask_matrix[:4000])
+plt.imshow(sam_mask_matrix[:1000])
+plt.title('Máscara SAM')
+plt.subplot(3, 3, 4)
 for firma in LOTE_PARA_FILTRAR:
     plt.plot(wavelengths, firma)
 plt.title('Firmas del Lote para Filtrar')
 plt.xlabel('Índice Espectral')
 plt.ylabel('Intensidad Espectral')
-plt.show()
 
-#plt.figure(figsize=(10, 6))
-#for firma in BANDA:
-#    plt.plot(wavelengths, firma)
-#plt.title('Firmas de la Banda')
-#plt.xlabel('Índice Espectral')
-#plt.ylabel('Intensidad Espectral')
-#plt.show()
 
-# Solicitar umbral para el filtrado basado en máximos
-umbral = float(input("Introduce el umbral para el filtrado basado en el máximo de las firmas: "))
+plt.subplot(3, 3, 5)
+for firma in firmas_seleccionadas:
+    plt.plot(wavelengths, firma)
+plt.title('Firmas Seleccionadas')
 
-# Aplicar el filtrado basado en umbral
-threshold_mask = np.max(LOTE_PARA_FILTRAR, axis=1) >= umbral
-threshold_mask_matrix = np.tile(threshold_mask[:, None], (1, LOTE_PARA_FILTRAR.shape[1]))
+plt.subplot(3, 3, 6)
+for firma in firmas_delete:
+    plt.plot(wavelengths, firma)
+plt.title('Firmas eliminadas')
 
-# Guardar los datos filtrados
-firmas_seleccionadas_umbral = LOTE_PARA_FILTRAR[threshold_mask]
-firmas_delete_umbral = LOTE_PARA_FILTRAR[~threshold_mask]
-savemat(os.path.join(processed_dir, "lote_umbral.mat"), {'data': firmas_seleccionadas_umbral})
-savemat(os.path.join(delete_dir, "lote_delete_umbral.mat"), {'data': firmas_delete_umbral})
 
-# Generar subplots para mostrar las máscaras y los datos
-plt.figure(figsize=(12, 8))
-plt.subplot(2, 2, 1)
-#plt.imshow(BANDA[:4000], aspect='auto')
-#plt.imshow(BANDA[:4000])
-plt.imshow(BANDA[:1000])
-plt.title('BANDA')
-plt.subplot(2, 2, 2)
-#plt.imshow(LOTE_PARA_FILTRAR[:4000], aspect='auto')
-#plt.imshow(LOTE_PARA_FILTRAR[:4000])
-plt.imshow(LOTE_PARA_FILTRAR[:1000])
-plt.title('LOTE PARA FILTRAR')
-plt.subplot(2, 2, 3)
-#plt.imshow(sam_mask_matrix[:4000], aspect='auto')
-#plt.imshow(sam_mask_matrix[:4000])
-plt.imshow(sam_mask_matrix[:1000])
-plt.title('Máscara SAM')
-plt.subplot(2, 2, 4)
-#plt.imshow(threshold_mask_matrix[:4000], aspect='auto')
-#plt.imshow(threshold_mask_matrix[:4000])
-plt.imshow(threshold_mask_matrix[:1000])
-plt.title('Máscara Umbral')
+
 plt.tight_layout()
 plt.savefig(os.path.join(muestra_dir, '2Preprocessing.png'))
 #plt.show()
@@ -121,9 +115,10 @@ with open(summary_filename, 'w') as file:
     file.write(f"Total de firmas eliminadas: {len(firmas_delete)}\n")
     file.write(f"Total de firmas seleccionadas: {len(firmas_seleccionadas)}\n")
     file.write(f"Ángulo utilizado para filtrado: {angulo}radiantes\n")
-    file.write("---------------------------------------------\n")
-    file.write(f"Total de firmas seleccionadas por umbral: {len(firmas_seleccionadas_umbral)}\n")
-    file.write(f"Total de firmas eliminadas por umbral: {len(firmas_delete_umbral)}\n")
-    file.write(f"Umbral utilizado: {umbral}\n")
-
 print("Proceso completado.")
+
+
+
+
+
+
