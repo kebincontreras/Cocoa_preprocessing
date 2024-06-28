@@ -9,7 +9,8 @@ base_dir = "C:\\Users\\USUARIO\\Documents\\GitHub\\Preprocessing"
 banda_dir = os.path.join(base_dir, "Anexos")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
 results_dir = os.path.join(base_dir, "Results")
-muestra_dir = os.path.join(results_dir, "lote_1_finallllllllll")
+muestra_dir = os.path.join(results_dir, "lote_5_kmeans_5_raad_01")
+#muestra_dir = os.path.join(results_dir, "banda_5")
 processed_dir = os.path.join(muestra_dir, "Processed")
 delete_dir = os.path.join(muestra_dir, "Delete")
 
@@ -23,7 +24,28 @@ BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BAND
 wavelengths = BANDA[0, :]
 BANDA = BANDA[1:]
 
-LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
+
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA']
+
+############################### TRAINT  ###############################
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TRAINFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TRAINFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TRAINFULL.mat"))['LCACAO']
+LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
+
+############################### TEST  ###############################
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TESTFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TESTFULL.mat"))['LCACAO']
+
+
+
+
+
+
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[1:]
 
 # Filtrar longitudes de onda entre 400 y 1000 nm
@@ -37,7 +59,7 @@ kmeans = KMeans(n_clusters=5, random_state=0).fit(BANDA)
 cluster_centers = kmeans.cluster_centers_
 
 # Calculando ángulos y generando la máscara SAM
-angulo = 0.275
+angulo = 0.1
 min_angles = []
 sam_mask = []
 for Fa in LOTE_PARA_FILTRAR:
@@ -54,85 +76,28 @@ firmas_seleccionadas = LOTE_PARA_FILTRAR[sam_mask == 1]
 firmas_delete = LOTE_PARA_FILTRAR[sam_mask == 0]
 
 
-
-"""
-
-# Generar subplots para mostrar los datos y ángulos
-plt.figure(figsize=(12, 10))
-plt.subplot(3, 3, 1)
-plt.imshow(BANDA[:1000])
-plt.title('BANDA')
-plt.subplot(3, 3, 2)
-plt.imshow(LOTE_PARA_FILTRAR[:1000])
-plt.title('LOTE PARA FILTRAR')
-plt.subplot(3, 3, 3)
-plt.imshow(sam_mask_matrix[:1000])
-plt.title('Máscara SAM')
-
-plt.subplot(3, 3, 4)
-for firma in LOTE_PARA_FILTRAR:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas del Lote para Filtrar')
-plt.xlabel('Índice Espectral')
-plt.ylabel('Intensidad Espectral')
-
-plt.subplot(3, 3, 5)
-for firma in firmas_seleccionadas:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas Seleccionadas')
-
-plt.subplot(3, 3, 6)
-for firma in firmas_delete:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas eliminadas')
-
-
-
-
-
-# Graficar ángulos mínimos con líneas verticales en subplot (3,3,7)
-plt.subplot(3, 3, 7)
-plt.vlines(range(len(min_angles)), 0, min_angles, colors='b', linestyles='solid', linewidth=0.5)
-#plt.title('Ángulo Mínimo por Firma')
-plt.xlabel('Índice de la Firma')
-plt.ylabel('Ángulo Mínimo (radianes)')
-
-# Ordenar ángulos mínimos y graficar con líneas verticales en subplot (3,3,8)
-sorted_indices = np.argsort(min_angles)
-sorted_min_angles = min_angles[sorted_indices]
-
-plt.subplot(3, 3, 8)
-#plt.vlines(range(len(sorted_min_angles)), 0, sorted_min_angles, colors='b', linestyles='solid', linewidth=0.5)
-plt.plot(sorted_min_angles)
-#plt.title('Ángulos Mínimos Ordenados')
-plt.xlabel('Índice Ordenado')
-plt.ylabel('Ángulo (radianes)')
-
-# Filtrar firmas seleccionadas con máximo en el rango [0, 2500] y graficar en subplot (3,3,9)
-max_intensities = np.max(firmas_seleccionadas, axis=1)
-range_intensity_mask = (max_intensities >= 0) & (max_intensities <= 2500)
-range_intensity_firmas = firmas_seleccionadas[range_intensity_mask]
-
-plt.subplot(3, 3, 9)
-for firma in range_intensity_firmas:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas Seleccionadas max [0, 2500]')
-plt.xlabel('Índice Espectral')
-plt.ylabel('Intensidad Espectral')
-"""
-
-
 # Generar subplots para mostrar los datos y ángulos
 plt.figure(figsize=(12, 10))
 plt.subplot(2, 3, 1)
-plt.imshow(BANDA[:1000])
+plt.imshow(BANDA[:2000])
 plt.title('Banda transportadora')
 plt.subplot(2, 3, 2)
-plt.imshow(LOTE_PARA_FILTRAR[:1000])
+plt.imshow(LOTE_PARA_FILTRAR[:2000])
 plt.title('Banda transportadora + Cacao')
 plt.subplot(2, 3, 3)
-plt.imshow(sam_mask_matrix[:1000])
+plt.imshow(sam_mask_matrix[:2000])
 plt.title('Máscara')
+
+
+
+# Graficar firmas medias de cada cluster
+plt.subplot(2, 3, 4)
+for center in cluster_centers:
+    plt.plot(wavelengths, center, label=f'Cluster {np.where(cluster_centers == center)[0][0]}')
+#plt.legend()
+plt.title('rep banda')
+#plt.xlabel('Longitud de Onda (nm)')
+#plt.ylabel('Intensidad')
 
 # Ordenar ángulos mínimos y graficar con líneas verticales en subplot (3,3,8)
 sorted_indices = np.argsort(min_angles)
@@ -141,9 +106,8 @@ sorted_min_angles = min_angles[sorted_indices]
 plt.subplot(2, 3, 5)
 #plt.vlines(range(len(sorted_min_angles)), 0, sorted_min_angles, colors='b', linestyles='solid', linewidth=0.5)
 plt.plot(sorted_min_angles)
-#plt.title('Ángulos Mínimos Ordenados')
-plt.xlabel('Índice Ordenado')
-plt.ylabel('Ángulo (radianes)')
+plt.title('Sorted SAM')
+
 
 # Filtrar firmas seleccionadas con máximo en el rango [0, 2500] y graficar en subplot (3,3,9)
 max_intensities = np.max(firmas_seleccionadas, axis=1)
@@ -153,7 +117,7 @@ range_intensity_firmas = firmas_seleccionadas[range_intensity_mask]
 plt.subplot(2, 3, 6)
 for firma in range_intensity_firmas:
     plt.plot(wavelengths, firma)
-plt.title('Firmas Seleccionadas max [0, 2500]')
+plt.title('Sel 3000')
 plt.xlabel('Índice Espectral')
 plt.ylabel('Intensidad Espectral')
 
