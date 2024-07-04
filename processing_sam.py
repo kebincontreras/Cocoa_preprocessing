@@ -28,11 +28,11 @@ BANDA = BANDA[1:]
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA']
 
 ############################### TRAINT  ###############################
-#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
+LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TRAINFULL.mat"))['LCACAO']
-LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
 
 ############################### TEST  ###############################
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TESTFULL.mat"))['LCACAO']
@@ -40,11 +40,6 @@ LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TESTFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TESTFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TESTFULL.mat"))['LCACAO']
-
-
-
-
-
 
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[1:]
 
@@ -74,6 +69,10 @@ min_angles = np.array(min_angles)
 
 firmas_seleccionadas = LOTE_PARA_FILTRAR[sam_mask == 1]
 firmas_delete = LOTE_PARA_FILTRAR[sam_mask == 0]
+
+# Guardar firmas seleccionadas y eliminadas en archivos .mat
+savemat(os.path.join(processed_dir, 'firmas_seleccionadas.mat'), {'firmas_seleccionadas': firmas_seleccionadas})
+savemat(os.path.join(delete_dir, 'firmas_delete.mat'), {'firmas_delete': firmas_delete})
 
 
 # Generar subplots para mostrar los datos y ángulos
