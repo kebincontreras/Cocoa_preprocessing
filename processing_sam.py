@@ -1,4 +1,3 @@
-# Importar las librerías necesarias
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -10,7 +9,8 @@ base_dir = "C:\\Users\\USUARIO\\Documents\\GitHub\\Preprocessing"
 banda_dir = os.path.join(base_dir, "Anexos")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
 results_dir = os.path.join(base_dir, "Results")
-muestra_dir = os.path.join(results_dir, "lote_1_final")
+muestra_dir = os.path.join(results_dir, "lote_5_kmeans_5_raad_01")
+#muestra_dir = os.path.join(results_dir, "banda_5")
 processed_dir = os.path.join(muestra_dir, "Processed")
 delete_dir = os.path.join(muestra_dir, "Delete")
 
@@ -25,12 +25,14 @@ wavelengths = BANDA[0, :]
 BANDA = BANDA[1:]
 
 
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA']
+
 ############################### TRAINT  ###############################
-LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
+#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L2F66R310324C070524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TRAINFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TRAINFULL.mat"))['LCACAO']
-#LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
+LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TRAINFULL.mat"))['LCACAO']
 
 ############################### TEST  ###############################
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TESTFULL.mat"))['LCACAO']
@@ -38,6 +40,11 @@ LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L3F84R020424C090524TESTFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L4F92R130424C090524TESTFULL.mat"))['LCACAO']
 #LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L5F96RDDMMAAC090524TESTFULL.mat"))['LCACAO']
+
+
+
+
+
 
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[1:]
 
@@ -51,74 +58,80 @@ LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[:, mask]
 kmeans = KMeans(n_clusters=5, random_state=0).fit(BANDA)
 cluster_centers = kmeans.cluster_centers_
 
-# Generación de una máscara de selección para filtrar firmas espectrales (SAM)
+# Calculando ángulos y generando la máscara SAM
+angulo = 0.1
+min_angles = []
 sam_mask = []
-angulo = 0.275
 for Fa in LOTE_PARA_FILTRAR:
     Phis = [np.arccos(np.dot(Fa, nm) / (np.linalg.norm(Fa) * np.linalg.norm(nm))) for nm in cluster_centers]
-    sam_mask.append(int(any(phi > angulo for phi in Phis)))
+    min_angle = np.min(Phis)
+    min_angles.append(min_angle)
+    sam_mask.append(int(min_angle > angulo))
 
 sam_mask = np.array(sam_mask)
 sam_mask_matrix = np.tile(sam_mask[:, None], (1, LOTE_PARA_FILTRAR.shape[1]))
+min_angles = np.array(min_angles)
 
 firmas_seleccionadas = LOTE_PARA_FILTRAR[sam_mask == 1]
 firmas_delete = LOTE_PARA_FILTRAR[sam_mask == 0]
 
-# Generar subplots para mostrar las máscaras y los datos
-plt.figure(figsize=(12, 8))
-plt.subplot(3, 3, 1)
-#plt.imshow(BANDA[:4000], aspect='auto')
-#plt.imshow(BANDA[:4000])
-plt.imshow(BANDA[:1000])
-plt.title('BANDA')
-plt.subplot(3, 3, 2)
-#plt.imshow(LOTE_PARA_FILTRAR[:4000], aspect='auto')
-#plt.imshow(LOTE_PARA_FILTRAR[:4000])
-plt.imshow(LOTE_PARA_FILTRAR[:1000])
-plt.title('LOTE PARA FILTRAR')
-plt.subplot(3, 3, 3)
-#plt.imshow(sam_mask_matrix[:4000], aspect='auto')
-#plt.imshow(sam_mask_matrix[:4000])
-plt.imshow(sam_mask_matrix[:1000])
-plt.title('Máscara SAM')
-plt.subplot(3, 3, 4)
-for firma in LOTE_PARA_FILTRAR:
+
+# Generar subplots para mostrar los datos y ángulos
+plt.figure(figsize=(12, 10))
+plt.subplot(2, 3, 1)
+plt.imshow(BANDA[:2000])
+plt.title('Banda transportadora')
+plt.subplot(2, 3, 2)
+plt.imshow(LOTE_PARA_FILTRAR[:2000])
+plt.title('Banda transportadora + Cacao')
+plt.subplot(2, 3, 3)
+plt.imshow(sam_mask_matrix[:2000])
+plt.title('Máscara')
+
+
+
+# Graficar firmas medias de cada cluster
+plt.subplot(2, 3, 4)
+for center in cluster_centers:
+    plt.plot(wavelengths, center, label=f'Cluster {np.where(cluster_centers == center)[0][0]}')
+#plt.legend()
+plt.title('rep banda')
+#plt.xlabel('Longitud de Onda (nm)')
+#plt.ylabel('Intensidad')
+
+# Ordenar ángulos mínimos y graficar con líneas verticales en subplot (3,3,8)
+sorted_indices = np.argsort(min_angles)
+sorted_min_angles = min_angles[sorted_indices]
+
+plt.subplot(2, 3, 5)
+#plt.vlines(range(len(sorted_min_angles)), 0, sorted_min_angles, colors='b', linestyles='solid', linewidth=0.5)
+plt.plot(sorted_min_angles)
+plt.title('Sorted SAM')
+
+
+# Filtrar firmas seleccionadas con máximo en el rango [0, 2500] y graficar en subplot (3,3,9)
+max_intensities = np.max(firmas_seleccionadas, axis=1)
+range_intensity_mask = (max_intensities >= 0) & (max_intensities <= 3000)
+range_intensity_firmas = firmas_seleccionadas[range_intensity_mask]
+
+plt.subplot(2, 3, 6)
+for firma in range_intensity_firmas:
     plt.plot(wavelengths, firma)
-plt.title('Firmas del Lote para Filtrar')
+plt.title('Sel 3000')
 plt.xlabel('Índice Espectral')
 plt.ylabel('Intensidad Espectral')
 
 
-plt.subplot(3, 3, 5)
-for firma in firmas_seleccionadas:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas Seleccionadas')
-
-plt.subplot(3, 3, 6)
-for firma in firmas_delete:
-    plt.plot(wavelengths, firma)
-plt.title('Firmas eliminadas')
-
-
-
 plt.tight_layout()
 plt.savefig(os.path.join(muestra_dir, '2Preprocessing.png'))
-#plt.show()
 
-# Nombre del archivo de texto
+# Guardar y cerrar el archivo de resumen
 summary_filename = os.path.join(muestra_dir, 'summary_sam.txt')
-
-# Abrir archivo para escritura
 with open(summary_filename, 'w') as file:
     file.write(f"Nombre de la muestra: {os.path.basename(muestra_dir)}\n")
     file.write(f"Total de firmas en LOTE_PARA_FILTRAR: {len(LOTE_PARA_FILTRAR)}\n")
     file.write(f"Total de firmas eliminadas: {len(firmas_delete)}\n")
     file.write(f"Total de firmas seleccionadas: {len(firmas_seleccionadas)}\n")
-    file.write(f"Ángulo utilizado para filtrado: {angulo}radiantes\n")
+    file.write(f"Ángulo utilizado para filtrado: {angulo} radianes\n")
 print("Proceso completado.")
-
-
-
-
-
 
