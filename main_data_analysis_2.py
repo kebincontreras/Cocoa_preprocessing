@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-with h5py.File('Results/train_cocoa_hdsp_sam015_ultra_small.h5', 'r') as f:
+with h5py.File('Results/test_cocoa_hdsp_sam015_ultra_small_kmeans3.h5', 'r') as f:
     X = f['spec'][:]
     y = f['label'][:]
 
@@ -11,7 +11,7 @@ with h5py.File('Results/train_cocoa_hdsp_sam015_ultra_small.h5', 'r') as f:
 
 plt.figure(figsize=(8, 6))
 
-for i in range(5):
+for i in range(3):
     mask = y.squeeze() == i
     X_class = X[mask]
     mean = X_class.mean(axis=0)
