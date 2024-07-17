@@ -27,6 +27,18 @@ conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='au
 full_cocoa_paths = {'train': {0: "L1F60R290324C070524TRAINFULL.mat"},
                     'test': {0: "L1F60R290324C070524TESTFULL.mat"}}
 
+# full_cocoa_paths = {'train': {1: "L2F66R310324C070524TRAINFULL.mat"},
+#                     'test': {1: "L2F66R310324C070524TESTFULL.mat", }}
+
+# full_cocoa_paths = {'train': {2: "L3F84R020424C090524TRAINFULL.mat"},
+#                     'test': {2: "L3F84R020424C090524TESTFULL.mat"}}
+
+# full_cocoa_paths = {'train': {3: "L4F92R130424C090524TRAINFULL.mat"},
+#                     'test': {3: "L4F92R130424C090524TESTFULL.mat"}}
+
+# full_cocoa_paths = {'train': {4: "L5F96RDDMMAAC090524TRAINFULL.mat"},
+#                     'test': {4: "L5F96RDDMMAAC090524TESTFULL.mat"}}
+
 
 # Append new data to dataset
 def append_to_dataset(dataset, new_data):
@@ -85,7 +97,21 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
             cocoa_bean_rep_list = []
             for cocoa_index in cocoa_bean_indices:
                 if sam_mask[cocoa_index:cocoa_index + num_samples_per_cocoa_bean].all():
-                    cocoa_bean_list.append(cocoa_lot[cocoa_index:cocoa_index + num_samples_per_cocoa_bean])
+                    cocoa_bean_samples = cocoa_lot[cocoa_index:cocoa_index + num_samples_per_cocoa_bean]
+                    cocoa_bean_rep, labels, _ = k_means(cocoa_bean_samples, n_clusters=3, # 1
+                                                        n_init='auto', random_state=0)
+
+                    # sam metric
+
+                    # cocoa_scores = np.arccos(np.matmul(cocoa_bean_samples, cocoa_bean_rep.T) / np.matmul(
+                    #     np.linalg.norm(cocoa_bean_samples, axis=-1, keepdims=True),
+                    #     np.linalg.norm(cocoa_bean_rep, axis=-1, keepdims=True).T))
+                    #
+                    # min_distance_index, = np.argmin(cocoa_scores, axis=0)
+
+                    cocoa_bean_list.append(cocoa_bean_samples)
+                    cocoa_bean_rep_list.append(cocoa_bean_rep)
+                    # cocoa_bean_rep_list.append(cocoa_bean_samples[min_distance_index])
 
                 else:
                     print('Invalid cocoa bean range', cocoa_index, cocoa_index + num_samples_per_cocoa_bean,
@@ -93,8 +119,7 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             # append to dataset
 
-            # num_samples = 5000 if subset_name == 'train' else 1000  # small
-            num_samples = 4750 if subset_name == 'train' else 250  # ultra-small
+            print('Taipo')
 
             # append_to_dataset(dataset, selected_samples)
             # append_to_dataset(labelset, labels)
