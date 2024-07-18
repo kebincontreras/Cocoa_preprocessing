@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 base_dir = "C:\\Users\\USUARIO\\Documents\\GitHub\\Preprocessing"
 banda_dir = os.path.join(base_dir, "Anexos")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
-results_dir = os.path.join(base_dir, "Results")
+results_dir = os.path.join(base_dir, "results_old")
 muestra_dir = os.path.join(results_dir, "lote_5_kmeans_5_raad_01")
 #muestra_dir = os.path.join(results_dir, "banda_5")
 processed_dir = os.path.join(muestra_dir, "Processed")

@@ -1,27 +1,32 @@
 import os
 import h5py
 import numpy as np
-from einops import repeat
 
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from sklearn.cluster import k_means
 
 # Definición de directorios base y subdirectorios para organizar datos y resultados
-base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset"
+base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
 banda_dir = os.path.join(base_dir, "Anexos")
+bw_dir = os.path.join(base_dir, "bw_ref")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
-results_dir = os.path.join("Results")
-
-angle_error = 0.3
+results_dir = os.path.join("results")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)
 
+angle_error = 0.4
+
+# black and white refs
+
+white_ref = np.loadtxt(os.path.join(bw_dir, 'BLANCO_ESCALADO_K.csv'), delimiter=',')[350:-350]
+black_ref = np.loadtxt(os.path.join(bw_dir, 'NEGRO_DEEPL_KEBIN.csv'), delimiter=',')[350:-350]
+
 # Cargar datos desde archivos .mat
-BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA'][:, 48:]
+BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA'][:, 350:-350]
 wavelengths = BANDA[0, :]
-conveyor_belt = BANDA[1:]
+conveyor_belt = (BANDA[1:] - black_ref) / (white_ref - black_ref)
 conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='auto', random_state=0)
 
 full_cocoa_paths = {'train': {0: "L1F60R290324C070524TRAINFULL.mat"},
@@ -57,8 +62,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         for label, cocoa_filename in cocoa_filenames.items():
             print(f"Processing {cocoa_filename}")
-            COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['LCACAO'][:, 48:]
-            cocoa_lot = COCOA[1:]
+            COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['LCACAO'][:, 350:-350]
+            cocoa_lot = (COCOA[1:] - black_ref) / (white_ref - black_ref)
 
             cocoa_lot = np.delete(cocoa_lot, 8719,
                                   axis=0) if cocoa_filename == 'L2F66R310324C070524TESTFULL.mat' else cocoa_lot
@@ -91,31 +96,72 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             # build dataset for each cocoa bean
 
-            num_samples_per_cocoa_bean = 20
+            num_samples_per_cocoa_bean = 5
 
             cocoa_bean_list = []
             cocoa_bean_rep_list = []
             for cocoa_index in cocoa_bean_indices:
                 if sam_mask[cocoa_index:cocoa_index + num_samples_per_cocoa_bean].all():
                     cocoa_bean_samples = cocoa_lot[cocoa_index:cocoa_index + num_samples_per_cocoa_bean]
-                    cocoa_bean_rep, labels, _ = k_means(cocoa_bean_samples, n_clusters=3, # 1
+                    cocoa_bean_rep, labels, _ = k_means(cocoa_bean_samples, n_clusters=1,
                                                         n_init='auto', random_state=0)
 
                     # sam metric
 
-                    # cocoa_scores = np.arccos(np.matmul(cocoa_bean_samples, cocoa_bean_rep.T) / np.matmul(
-                    #     np.linalg.norm(cocoa_bean_samples, axis=-1, keepdims=True),
-                    #     np.linalg.norm(cocoa_bean_rep, axis=-1, keepdims=True).T))
-                    #
-                    # min_distance_index, = np.argmin(cocoa_scores, axis=0)
+                    cocoa_scores = np.arccos(np.matmul(cocoa_bean_samples, cocoa_bean_rep.T) / np.matmul(
+                        np.linalg.norm(cocoa_bean_samples, axis=-1, keepdims=True),
+                        np.linalg.norm(cocoa_bean_rep, axis=-1, keepdims=True).T))
+
+                    min_distance_index, = np.argmin(cocoa_scores, axis=0)
 
                     cocoa_bean_list.append(cocoa_bean_samples)
-                    cocoa_bean_rep_list.append(cocoa_bean_rep)
-                    # cocoa_bean_rep_list.append(cocoa_bean_samples[min_distance_index])
+                    # cocoa_bean_rep_list.append(cocoa_bean_rep)
+                    cocoa_bean_rep_list.append(cocoa_bean_samples[min_distance_index])
 
                 else:
                     print('Invalid cocoa bean range', cocoa_index, cocoa_index + num_samples_per_cocoa_bean,
                           'This cocoa bean will be skipped')
+
+            # cocoa_bean_rep_list = np.array(cocoa_bean_rep_list)
+            #
+            # # 3 representative labels
+            #
+            # cocoa_bean_labels3, labels3, _ = k_means(cocoa_bean_samples, n_clusters=3, n_init='auto', random_state=0)
+            # cocoa_scores3 = np.arccos(np.matmul(cocoa_bean_samples, cocoa_bean_labels3.T) / np.matmul(
+            #     np.linalg.norm(cocoa_bean_samples, axis=-1, keepdims=True),
+            #     np.linalg.norm(cocoa_bean_labels3, axis=-1, keepdims=True).T) / 1e10)
+            #
+            # # set nan values in cocoa_scores3
+            #
+            # cocoa_scores3[np.isnan(cocoa_scores3)] = 1.0
+            #
+            # min_distance_index3, = np.argmin(cocoa_scores3, axis=0)
+            # cocbean_label3 = cocoa_bean_samples[min_distance_index3]
+
+            # # pca analysis
+            #
+            # X_scaled = np.concatenate(cocoa_bean_list, axis=0)
+            # X_scaled = StandardScaler().fit_transform(X_scaled)
+            #
+            # pca = PCA(n_components=2)
+            # X_pca = pca.fit_transform(X_scaled)
+            #
+            # # plot
+            #
+            # plt.figure(figsize=(8, 6))
+            #
+            # for i in range(5):
+            #     mask = y.squeeze() == i
+            #     plt.scatter(X_pca[mask, 0], X_pca[mask, 1], label=f'Class {i + 1}', alpha=0.1)
+            #
+            # plt.legend()
+            # plt.xlabel('Principal Component 1')
+            # plt.ylabel('Principal Component 2')
+            # plt.title('PCA of Cocoa dataset')
+            #
+            # plt.tight_layout()
+            # plt.show()
+
 
             # append to dataset
 

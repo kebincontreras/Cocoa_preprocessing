@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-with h5py.File('Results/train_cocoa_hdsp_sam015_ultra_small.h5', 'r') as f:
+with h5py.File('results/test_cocoa_hdsp_sam04_ultra_small.h5', 'r') as f:
     X = f['spec'][:]
     y = f['label'][:]
 
@@ -20,7 +20,7 @@ plt.figure(figsize=(8, 6))
 
 for i in range(5):
     mask = y.squeeze() == i
-    plt.scatter(X_pca[mask, 0], X_pca[mask, 1], label=f'Class {i + 1}', alpha=0.1)
+    plt.scatter(X_pca[mask, 0], X_pca[mask, 1], label=f'Class {i + 1}', alpha=0.5)
 
 plt.legend()
 plt.xlabel('Principal Component 1')
@@ -43,7 +43,7 @@ ax = fig.add_subplot(111, projection='3d')
 
 for i in range(5):
     mask = y.squeeze() == i
-    ax.scatter(X_pca[mask, 0], X_pca[mask, 1], X_pca[mask, 2], label=f'Class {i + 1}', alpha=0.1)
+    ax.scatter(X_pca[mask, 0], X_pca[mask, 1], X_pca[mask, 2], label=f'Class {i + 1}', alpha=0.5)
 
 ax.legend()
 ax.set_xlabel('Principal Component 1')

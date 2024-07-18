@@ -2,7 +2,7 @@ import h5py
 from sklearn.cluster import k_means
 from sklearn.preprocessing import StandardScaler
 
-with h5py.File('Results/test_cocoa_hdsp_sam015_ultra_small.h5', 'r') as f:
+with h5py.File('results_old/test_cocoa_hdsp_sam015_ultra_small.h5', 'r') as f:
     X = f['spec'][:]
     y = f['label'][:]
 
