@@ -23,6 +23,8 @@ angle_error = 0.4
 white_ref = np.loadtxt(os.path.join(bw_dir, 'BLANCO_ESCALADO_K.csv'), delimiter=',')[350:-350]
 black_ref = np.loadtxt(os.path.join(bw_dir, 'NEGRO_DEEPL_KEBIN.csv'), delimiter=',')[350:-350]
 
+white_ref = 0.2 * white_ref
+
 # Cargar datos desde archivos .mat
 BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA'][:, 350:-350]
 wavelengths = BANDA[0, :]
