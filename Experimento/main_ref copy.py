@@ -9,26 +9,39 @@ from sklearn.preprocessing import StandardScaler
 base_dir = r"C:\Users\USUARIO\Documents\GitHub\Dataset\Lab_hdsp_cocoa_experimento_jorge"
 
 # Cargar los archivos
-
 cacao1_VIS = loadmat(os.path.join(base_dir, 'experimento_cacao_1_fermentation.mat'))
 cacao2_VIS = loadmat(os.path.join(base_dir, 'experimento_cacao_2_fermentation.mat'))
 cacao_NIR = loadmat(os.path.join(base_dir, 'experimento_cacao_3_fermantation_NIR.mat'))
 
+# Obtener las longitudes de onda
+wavelength = cacao1_VIS['wavelengths'].squeeze()
 
+# Filtrar las longitudes de onda en el rango de 450 a 910 nm
+mask = (wavelength >= 450) & (wavelength <= 910)
 
+# Filtrar las longitudes de onda
+filtered_wavelength = wavelength[mask]
+
+# Filtrar los datos basados en las longitudes de onda seleccionadas
+def filter_data(data, mask):
+    return data[:, mask]
+
+# Asegurarse de que el divisor tenga la misma longitud que los datos
+blanco_teflon_n = filter_data(cacao1_VIS['my_blanco_teflon_n'], mask)
+
+# Aplicar el filtro a los datos y dividir por el blanco_teflon_n filtrado
 cocoa_VIS = dict(
-    open50_1=dict(data=cacao1_VIS['my_cacao_50_abierto_1'] / cacao1_VIS['my_blanco_teflon_n'], label='bad'),
-    closed50_1=dict(data=cacao1_VIS['my_cacao_50_cerrado_1'] / cacao1_VIS['my_blanco_teflon_n'], label='bad'),
-    open73_1=dict(data=cacao2_VIS['my_cacao_73_abierto_1'] / cacao1_VIS['my_blanco_teflon_n'], label='neutral'),
-    closed73_1=dict(data=cacao2_VIS['my_cacao_73_cerrado_1'] / cacao1_VIS['my_blanco_teflon_n'], label='neutral'),
-    open73_2=dict(data=cacao2_VIS['my_cacao_73_abierto_2'] / cacao1_VIS['my_blanco_teflon_n'], label='good'),
-    closed73_2=dict(data=cacao2_VIS['my_cacao_73_cerrado_2'] / cacao1_VIS['my_blanco_teflon_n'], label='good'),
-    open95_1=dict(data=cacao1_VIS['my_cacao_95_abierto_1'] / cacao1_VIS['my_blanco_teflon_n'], label='bad'),
-    closed95_1=dict(data=cacao1_VIS['my_cacao_95_cerrado_1'] / cacao1_VIS['my_blanco_teflon_n'], label='bad'),
-    open96_1=dict(data=cacao2_VIS['my_cacao_96_abierto_1'] / cacao1_VIS['my_blanco_teflon_n'], label='good'),
-    closed96_1=dict(data=cacao2_VIS['my_cacao_96_cerrado_1'] / cacao1_VIS['my_blanco_teflon_n'], label='good')
+    open50_1=dict(data=filter_data(cacao1_VIS['my_cacao_50_abierto_1'], mask) / blanco_teflon_n, label='bad'),
+    closed50_1=dict(data=filter_data(cacao1_VIS['my_cacao_50_cerrado_1'], mask) / blanco_teflon_n, label='bad'),
+    open73_1=dict(data=filter_data(cacao2_VIS['my_cacao_73_abierto_1'], mask) / blanco_teflon_n, label='neutral'),
+    closed73_1=dict(data=filter_data(cacao2_VIS['my_cacao_73_cerrado_1'], mask) / blanco_teflon_n, label='neutral'),
+    open73_2=dict(data=filter_data(cacao2_VIS['my_cacao_73_abierto_2'], mask) / blanco_teflon_n, label='good'),
+    closed73_2=dict(data=filter_data(cacao2_VIS['my_cacao_73_cerrado_2'], mask) / blanco_teflon_n, label='good'),
+    open95_1=dict(data=filter_data(cacao1_VIS['my_cacao_95_abierto_1'], mask) / blanco_teflon_n, label='bad'),
+    closed95_1=dict(data=filter_data(cacao1_VIS['my_cacao_95_cerrado_1'], mask) / blanco_teflon_n, label='bad'),
+    open96_1=dict(data=filter_data(cacao2_VIS['my_cacao_96_abierto_1'], mask) / blanco_teflon_n, label='good'),
+    closed96_1=dict(data=filter_data(cacao2_VIS['my_cacao_96_cerrado_1'], mask) / blanco_teflon_n, label='good')
 )
-
 
 # plot dataset where each pair consists of a spectral signature and a label
 # plot in a single figure with legend
@@ -36,30 +49,36 @@ cocoa_VIS = dict(
 plt.figure()
 
 for key, value in cocoa_VIS.items():
-    plt.plot(value['data'].squeeze(), label=value['label'])
+    plt.plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
 
 plt.legend()
+plt.xlabel('Wavelength (nm)')
+plt.ylabel('Reflectance')
+plt.title('Spectral Signatures')
 plt.show()
 
-# perform the same plot but separating each pair open an closed in different subplots
+# perform the same plot but separating each pair open and closed in different subplots
 
 plt.figure()
 
 for key, value in cocoa_VIS.items():
     plt.subplot(2, 5, list(cocoa_VIS.keys()).index(key) + 1)
-    plt.plot(value['data'].squeeze())
+    plt.plot(filtered_wavelength, value['data'].squeeze())
     plt.title(key)
+    plt.xlabel('Wavelength (nm)')
+    plt.ylabel('Reflectance')
 
+plt.tight_layout()
 plt.show()
 
-# plot in a same subplot the open an closed pairs
+# plot in a same subplot the open and closed pairs
 
 plt.figure(figsize=(20, 5))
 
 index = 1
 for i, (key, value) in enumerate(cocoa_VIS.items()):
     plt.subplot(1, 5, index)
-    plt.plot(value['data'].squeeze(), label=key)
+    plt.plot(filtered_wavelength, value['data'].squeeze(), label=key)
 
     if (i + 1) % 2 == 0:
         index += 1
@@ -68,16 +87,17 @@ for i, (key, value) in enumerate(cocoa_VIS.items()):
 plt.tight_layout()
 plt.show()
 
-
-# plot in a same subplot the open an closed pairs
+# plot in a same subplot the open and closed pairs
 
 plt.figure(figsize=(20, 5))
 
 index = 1
 for i, (key, value) in enumerate(cocoa_VIS.items()):
     plt.subplot(1, 5, index)
-    plt.plot(value['data'].squeeze() / value['data'].max(), label=key)
+    plt.plot(filtered_wavelength, value['data'].squeeze() / value['data'].max(), label=key)
     plt.title(value['label'])
+    plt.xlabel('Wavelength (nm)')
+    plt.ylabel('Normalized Reflectance')
 
     if (i + 1) % 2 == 0:
         index += 1
@@ -85,7 +105,6 @@ for i, (key, value) in enumerate(cocoa_VIS.items()):
 
 plt.tight_layout()
 plt.show()
-
 
 # build a dataset with the VIS data
 

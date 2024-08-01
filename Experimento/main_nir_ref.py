@@ -1,9 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 from scipy.io import loadmat
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+from scipy.io import loadmat
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
-cacao_NIR =  loadmat('experimento_cacao_3_fermantation_NIR.mat')
+# Directorio donde se encuentran los archivos
+base_dir = r"C:\Users\USUARIO\Documents\GitHub\Dataset\Lab_hdsp_cocoa_experimento_jorge"
+
+# Cargar los archivos
+
+cacao_NIR = loadmat(os.path.join(base_dir, 'experimento_cacao_3_fermantation_NIR.mat'))
 
 
 # fermentation level: bad=0, neutral=1, good=2
