@@ -52,7 +52,7 @@ cocoa_VIS_normalized = dict(
 )
 
 cocoa_VIS_standardized = dict(
-    open50_1=dict(data=standardize_data(filter_data(cacao1_VIS['my_cacao_50_abierto_1'], mask) / blanco_teflon_n), label='bad_abierto_1'),
+    open50_1=dict(data=standardize_data(filter_data(cacao1_VIS['my_cacao_50_abierto_1'], mask) / blanco_teflon_n), label='bad_50_abierto_1'),
     closed50_1=dict(data=standardize_data(filter_data(cacao1_VIS['my_cacao_50_cerrado_1'], mask) / blanco_teflon_n), label='bad_50_cerrado_1'),
     open73_1=dict(data=standardize_data(filter_data(cacao2_VIS['my_cacao_73_abierto_1'], mask) / blanco_teflon_n), label='neutral_73_abierto_1'),
     closed73_1=dict(data=standardize_data(filter_data(cacao2_VIS['my_cacao_73_cerrado_1'], mask) / blanco_teflon_n), label='neutral_73_cerrado_1'),
@@ -64,24 +64,86 @@ cocoa_VIS_standardized = dict(
     closed96_1=dict(data=standardize_data(filter_data(cacao2_VIS['my_cacao_96_cerrado_1'], mask) / blanco_teflon_n), label='good_96_cerrado_1')
 )
 
-# Crear subplots para normalización y estandarización
-fig, axs = plt.subplots(2, 1, figsize=(12, 12))
+# Crear subplots para normalización y estandarización (Figura 1)
+fig1, axs1 = plt.subplots(2, 1, figsize=(12, 12))
 
 # Plot Normalización
-axs[0].set_title('Normalized VIS Spectral Signatures')
+axs1[0].set_title('Normalized [MinMax] VIS Spectral Signatures')
 for key, value in cocoa_VIS_normalized.items():
-    axs[0].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
-axs[0].set_xlabel('Wavelength (nm)')
-axs[0].set_ylabel('Normalized Reflectance')
-axs[0].legend()
+    axs1[0].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
+#axs1[0].set_xlabel('Wavelength (nm)')
+axs1[0].set_ylabel('Normalized Reflectance')
+axs1[0].legend()
 
 # Plot Estandarización
-axs[1].set_title('Standardized VIS Spectral Signatures')
+axs1[1].set_title('Standardized [(x-m)\s] VIS Spectral Signatures')
 for key, value in cocoa_VIS_standardized.items():
-    axs[1].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
-axs[1].set_xlabel('Wavelength (nm)')
-axs[1].set_ylabel('Standardized Reflectance')
-axs[1].legend()
+    axs1[1].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
+axs1[1].set_xlabel('Wavelength (nm)')
+axs1[1].set_ylabel('Standardized Reflectance')
+axs1[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+# Crear subplots para diferenciar abierto y cerrado (Figura 2)
+fig2, axs2 = plt.subplots(2, 1, figsize=(12, 12))
+
+# Plot con colores diferenciados para abierto y cerrado (Normalizado)
+axs2[0].set_title('Normalized [MinMax] VIS Spectral Signatures (Open vs. Closed)')
+for key, value in cocoa_VIS_normalized.items():
+    if 'abierto' in value['label']:
+        axs2[0].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='blue')
+    elif 'cerrado' in value['label']:
+        axs2[0].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='red')
+axs2[0].set_xlabel('Wavelength (nm)')
+axs2[0].set_ylabel('Normalized Reflectance')
+axs2[0].legend()
+
+# Plot con colores diferenciados para abierto y cerrado (Estandarizado)
+axs2[1].set_title('Standardized [(x-m)\s] VIS Spectral Signatures (Open vs. Closed)')
+for key, value in cocoa_VIS_standardized.items():
+    if 'abierto' in value['label']:
+        axs2[1].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='blue')
+    elif 'cerrado' in value['label']:
+        axs2[1].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='red')
+axs2[1].set_xlabel('Wavelength (nm)')
+axs2[1].set_ylabel('Standardized Reflectance')
+axs2[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+# Calcular y graficar la media de las firmas para "bad", "neutral" y "good" (Normalizado)
+bad_normalized = np.mean([value['data'] for key, value in cocoa_VIS_normalized.items() if 'bad' in value['label']], axis=0)
+neutral_normalized = np.mean([value['data'] for key, value in cocoa_VIS_normalized.items() if 'neutral' in value['label']], axis=0)
+good_normalized = np.mean([value['data'] for key, value in cocoa_VIS_normalized.items() if 'good' in value['label']], axis=0)
+
+# Calcular y graficar la media de las firmas para "bad", "neutral" y "good" (Estandarizado)
+bad_standardized = np.mean([value['data'] for key, value in cocoa_VIS_standardized.items() if 'bad' in value['label']], axis=0)
+neutral_standardized = np.mean([value['data'] for key, value in cocoa_VIS_standardized.items() if 'neutral' in value['label']], axis=0)
+good_standardized = np.mean([value['data'] for key, value in cocoa_VIS_standardized.items() if 'good' in value['label']], axis=0)
+
+# Crear una nueva figura para las medias
+fig3, ax = plt.subplots(2, 1, figsize=(12, 12))
+
+# Graficar las medias normalizadas
+ax[0].set_title('Mean VIS Spectral Signatures (Normalized)')
+ax[0].plot(filtered_wavelength, bad_normalized.squeeze(), label='Bad', color='red')
+ax[0].plot(filtered_wavelength, neutral_normalized.squeeze(), label='Neutral', color='green')
+ax[0].plot(filtered_wavelength, good_normalized.squeeze(), label='Good', color='blue')
+ax[0].set_xlabel('Wavelength (nm)')
+ax[0].set_ylabel('Mean Normalized Reflectance')
+ax[0].legend()
+
+# Graficar las medias estandarizadas
+ax[1].set_title('Mean VIS Spectral Signatures (Standardized)')
+ax[1].plot(filtered_wavelength, bad_standardized.squeeze(), label='Bad', color='red')
+ax[1].plot(filtered_wavelength, neutral_standardized.squeeze(), label='Neutral', color='green')
+ax[1].plot(filtered_wavelength, good_standardized.squeeze(), label='Good', color='blue')
+ax[1].set_xlabel('Wavelength (nm)')
+ax[1].set_ylabel('Mean Standardized Reflectance')
+ax[1].legend()
 
 plt.tight_layout()
 plt.show()
