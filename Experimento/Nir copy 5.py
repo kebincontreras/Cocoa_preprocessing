@@ -76,10 +76,10 @@ cocoa_NIR_standardized = dict(
 )
 
 # Crear subplots para normalización y estandarización
-fig, axs = plt.subplots(2, 1, figsize=(12, 12))
+fig, axs = plt.subplots(4, 1, figsize=(12, 24))
 
 # Plot Normalización
-axs[0].set_title('MinMax NIR Spectral Signatures')
+axs[0].set_title('Normalized NIR Spectral Signatures')
 for key, value in cocoa_NIR_normalized.items():
     axs[0].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
 axs[0].set_xlabel('Wavelength (nm)')
@@ -87,12 +87,68 @@ axs[0].set_ylabel('Normalized Reflectance')
 axs[0].legend()
 
 # Plot Estandarización
-axs[1].set_title('(x-m)/u NIR Spectral Signatures')
+axs[1].set_title('Standardized NIR Spectral Signatures')
 for key, value in cocoa_NIR_standardized.items():
     axs[1].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
 axs[1].set_xlabel('Wavelength (nm)')
 axs[1].set_ylabel('Standardized Reflectance')
 axs[1].legend()
+
+# Plot con colores diferenciados para abierto y cerrado (Normalizado)
+axs[2].set_title('Normalized NIR Spectral Signatures (Open vs. Closed)')
+for key, value in cocoa_NIR_normalized.items():
+    if 'abierto' in value['label']:
+        axs[2].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='blue')
+    elif 'cerrado' in value['label']:
+        axs[2].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='red')
+axs[2].set_xlabel('Wavelength (nm)')
+axs[2].set_ylabel('Normalized Reflectance')
+axs[2].legend()
+
+# Plot con colores diferenciados para abierto y cerrado (Estandarizado)
+axs[3].set_title('Standardized NIR Spectral Signatures (Open vs. Closed)')
+for key, value in cocoa_NIR_standardized.items():
+    if 'abierto' in value['label']:
+        axs[3].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='blue')
+    elif 'cerrado' in value['label']:
+        axs[3].plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color='red')
+axs[3].set_xlabel('Wavelength (nm)')
+axs[3].set_ylabel('Standardized Reflectance')
+axs[3].legend()
+
+plt.tight_layout()
+plt.show()
+
+# Calcular y graficar la media de las firmas para "bad", "neutral" y "good" (Normalizado)
+bad_normalized = np.mean([value['data'] for key, value in cocoa_NIR_normalized.items() if 'bad' in value['label']], axis=0)
+neutral_normalized = np.mean([value['data'] for key, value in cocoa_NIR_normalized.items() if 'neutral' in value['label']], axis=0)
+good_normalized = np.mean([value['data'] for key, value in cocoa_NIR_normalized.items() if 'good' in value['label']], axis=0)
+
+# Calcular y graficar la media de las firmas para "bad", "neutral" y "good" (Estandarizado)
+bad_standardized = np.mean([value['data'] for key, value in cocoa_NIR_standardized.items() if 'bad' in value['label']], axis=0)
+neutral_standardized = np.mean([value['data'] for key, value in cocoa_NIR_standardized.items() if 'neutral' in value['label']], axis=0)
+good_standardized = np.mean([value['data'] for key, value in cocoa_NIR_standardized.items() if 'good' in value['label']], axis=0)
+
+# Crear una nueva figura para las medias
+fig, ax = plt.subplots(2, 1, figsize=(12, 12))
+
+# Graficar las medias normalizadas
+ax[0].set_title('Mean NIR Spectral Signatures (Normalized)')
+ax[0].plot(filtered_wavelength, bad_normalized.squeeze(), label='Bad', color='red')
+ax[0].plot(filtered_wavelength, neutral_normalized.squeeze(), label='Neutral', color='green')
+ax[0].plot(filtered_wavelength, good_normalized.squeeze(), label='Good', color='blue')
+ax[0].set_xlabel('Wavelength (nm)')
+ax[0].set_ylabel('Mean Normalized Reflectance')
+ax[0].legend()
+
+# Graficar las medias estandarizadas
+ax[1].set_title('Mean NIR Spectral Signatures (Standardized)')
+ax[1].plot(filtered_wavelength, bad_standardized.squeeze(), label='Bad', color='red')
+ax[1].plot(filtered_wavelength, neutral_standardized.squeeze(), label='Neutral', color='green')
+ax[1].plot(filtered_wavelength, good_standardized.squeeze(), label='Good', color='blue')
+ax[1].set_xlabel('Wavelength (nm)')
+ax[1].set_ylabel('Mean Standardized Reflectance')
+ax[1].legend()
 
 plt.tight_layout()
 plt.show()
