@@ -44,7 +44,7 @@ LOTE_PARA_FILTRAR = loadmat(os.path.join(lote_dir, "L1F60R290324C070524TRAINFULL
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[1:]
 
 # Filtrar longitudes de onda entre 400 y 1000 nm
-mask = (wavelengths >= 400) & (wavelengths <= 1000)
+mask = (wavelengths >= 400) & (wavelengths <= 900)
 wavelengths = wavelengths[mask]
 BANDA = BANDA[:, mask]
 LOTE_PARA_FILTRAR = LOTE_PARA_FILTRAR[:, mask]
