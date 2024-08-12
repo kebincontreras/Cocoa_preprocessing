@@ -4,7 +4,8 @@ import os
 from scipy.io import loadmat
 
 # Directorio donde se encuentran los archivos
-base_dir = r"C:\Users\USUARIO\Documents\GitHub\Dataset\Lab_hdsp_cocoa_experimento_jorge"
+# base_dir = r"C:\Users\USUARIO\Documents\GitHub\Dataset\Lab_hdsp_cocoa_experimento_jorge"
+base_dir = "."
 
 # Cargar los archivos
 cacao_NIR = loadmat(os.path.join(base_dir, 'experimento_cacao_3_fermantation_NIR.mat'))
@@ -91,10 +92,16 @@ cocoa_NIR_standardized = dict(
 # Crear subplots para estandarización (Figura 1)
 fig1, ax1 = plt.subplots(figsize=(12, 6))
 
+# crea una lista de colores para cada firma
+
+color_list = ['blue', 'red', 'green', 'purple', 'orange', 'cyan', 'magenta', 'yellow', 'black', 'gray', 'brown', 'pink',
+              'olive', 'lime', 'teal', 'coral']
+
 # Plot Estandarización
 ax1.set_title('Standardized [(x-m)/s] NIR Spectral Signatures')
 for key, value in cocoa_NIR_standardized.items():
-    ax1.plot(filtered_wavelength, value['data'].squeeze(), label=value['label'])
+    col = color_list.pop(0)
+    ax1.plot(filtered_wavelength, value['data'].squeeze(), label=value['label'], color=col)
 ax1.set_xlabel('Wavelength (nm)')
 ax1.set_ylabel('Standardized Reflectance')
 ax1.legend()
