@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-with h5py.File('results/test_cocoa_hdsp_sam04_ultra_small.h5', 'r') as f:
+with h5py.File('results_old/test_cocoa_hdsp_sam04_ultra_small.h5', 'r') as f:
     X = f['spec'][:]
     y = f['label'][:]
 

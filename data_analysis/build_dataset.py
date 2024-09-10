@@ -10,7 +10,7 @@ from sklearn.cluster import k_means
 base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
 banda_dir = os.path.join(base_dir, "Anexos")
 bw_dir = os.path.join(base_dir, "bw_ref")
-lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
+lote_dir = os.path.join(base_dir, "data")
 results_dir = os.path.join("results")
 
 # Asegurar la creación de los directorios si no existen
@@ -29,14 +29,24 @@ num_lot_reps = 1000
 num_samples_train = 143
 num_samples_test = 68
 
-full_cocoa_paths = {'train': {0: "L1F60R290324C070524TRAINFULL.mat",
-                              1: "L2F66R310324C070524TRAINFULL.mat",
-                              2: "L3F84R020424C090524TRAINFULL.mat",
-                              3: "L4F92R130424C090524TRAINFULL.mat"},
-                    'test': {0: "L1F60R290324C070524TESTFULL.mat",
-                             1: "L2F66R310324C070524TESTFULL.mat",
-                             2: "L3F84R020424C090524TESTFULL.mat",
-                             3: "L4F92R130424C090524TESTFULL.mat"}
+full_cocoa_paths = {'train': {0: "L1F60H096R290324C070524VISTRAIFULL.mat",
+                              1: "L2F66H144R310324C070524VISTRAIFULL.mat",
+                              2: "L2F73H144E270624C240724VISTRAIFULL.mat",
+                              3: "L3F84H192R020424C090524VISTRAIFULL.mat",
+                              4: "L1F85H110E270624C240724VISTRAIFULL.mat",
+                              5: "L4F92H264R130424C090524VISTRAIFULL.mat",
+                              6: "L3F94H216E270624C240724VISTRAIFULL.mat",
+                              7: "L4F96H252E270624C240724VISTRAIFULL.mat",
+                              },
+                    'test': {0: "L1F60H096R290324C070524VISTESTFULL.mat",
+                             1: "L2F66H144R310324C070524VISTESTFULL.mat",
+                             2: "L2F73H144E270624C250724VISTESTFULL.mat",
+                             3: "L3F84H192R020424C090524VISTESTFULL.mat",
+                             4: "L1F85H110E270624C250724VISTESTFULL.mat",
+                             5: "L4F92H264R130424C090524VISTESTFULL.mat",
+                             6: "L3F94H216E270624C250724VISTESTFULL.mat",
+                             7: "L4F96H252E270624C250724VISTESTFULL.mat",
+                             }
                     }
 
 # black and white refs
@@ -89,7 +99,11 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         for label, cocoa_filename in cocoa_filenames.items():
             print(f"Processing {cocoa_filename}")
-            COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['LCACAO'][:, efficiency_indices]
+            try:
+                COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['LCACAO'][:, efficiency_indices]
+            except:
+                COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['CAPTURA_SPN'][:, efficiency_indices]
+
             wavelengths = COCOA[0]
             # cocoa_lot = (COCOA[1:] - black_ref) / (white_ref - black_ref)
             cocoa_lot = COCOA[1:]

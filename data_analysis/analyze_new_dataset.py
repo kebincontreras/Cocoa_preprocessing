@@ -8,7 +8,7 @@ from sklearn.cluster import k_means
 
 # Definición de directorios base y subdirectorios para organizar datos y resultados
 base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/02_07_2024/Optical_lab_spectral/VIS"
-results_dir = os.path.join("samples/results")
+results_dir = os.path.join("samples/results_old")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)
