@@ -18,6 +18,7 @@ os.makedirs(results_dir, exist_ok=True)
 
 eff_percentage = 0.2
 angle_error = 0.2
+upper_angle_error = 0.8
 
 num_samples_per_cocoa_bean = 1
 epsilon_bound = 10
@@ -121,6 +122,7 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                 np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
 
             distance_Bands = np.min(scores, axis=-1)
+            # sam_mask = (upper_angle_error > distance_Bands) * (distance_Bands > angle_error)
             sam_mask = distance_Bands > angle_error
 
             # localization
@@ -153,6 +155,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
             cocoa_final_list = np.concatenate(cocoa_bean_list, axis=0)
             cocoa_final_list = (cocoa_final_list - black_ref) / (white_ref - black_ref)
 
+            # append to dataset
+
             if num_samples_train > 0 or num_samples_test > 0:
                 num_samples = num_samples_train if subset_name == 'train' else num_samples_test
             else:
@@ -160,6 +164,59 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             final_indices = np.linspace(0, cocoa_final_list.shape[0] - 1, num_samples, dtype=np.uint8)
             cocoa_final_list = cocoa_final_list[final_indices]
+
+            # final sam list
+
+            zeros = 1e-3 * np.ones((1, cocoa_final_list.shape[-1]))
+            sam_scores = np.arccos(np.matmul(cocoa_final_list, zeros.T) / np.matmul(
+                np.linalg.norm(cocoa_final_list, axis=-1, keepdims=True),
+                np.linalg.norm(zeros, axis=-1, keepdims=True).T))
+
+            # zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.shape[-1]))
+            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list, zeros.T) / np.matmul(
+            #     np.linalg.norm(cocoa_lot_final_list, axis=-1, keepdims=True),
+            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
+
+            # zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.mean(axis=1).shape[-1]))
+            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list.mean(axis=1), zeros.T) / np.matmul(
+            #     np.linalg.norm(cocoa_lot_final_list.mean(axis=1), axis=-1, keepdims=True),
+            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
+
+            # CONVEYOR BELT
+
+            # sam_scores = np.arccos(np.matmul(cocoa_final_list, conveyor_cluster_centers.T) / np.matmul(
+            #     np.linalg.norm(cocoa_final_list, axis=-1, keepdims=True),
+            #     np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
+            # sam_scores = np.min(sam_scores, axis=-1)
+
+            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list, conveyor_cluster_centers.T) / np.matmul(
+            #     np.linalg.norm(cocoa_lot_final_list, axis=-1, keepdims=True),
+            #     np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
+            # sam_scores = np.min(sam_scores, axis=-1)
+
+            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list.mean(axis=1), conveyor_cluster_centers.T) / np.matmul(
+            #     np.linalg.norm(cocoa_lot_final_list.mean(axis=1), axis=-1, keepdims=True),
+            #     np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
+            # sam_scores = np.min(sam_scores, axis=-1)
+
+            if 'L2F73' in cocoa_filename:
+                print('taipo')
+
+            upper_sam_mask = sam_scores < upper_angle_error
+            indices = np.where(sam_mask)[0]
+            cocoa_beans = np.split(indices, np.where(np.diff(indices) != 1)[0] + 1)
+
+            sam_scores = np.arccos(np.matmul(cocoa_beans, conveyor_cluster_centers.T) / np.matmul(
+                np.linalg.norm(cocoa_beans, axis=-1, keepdims=True),
+                np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
+            sam_scores = np.min(sam_scores, axis=-1)
+
+
+            cocoa_sam_list.append(sam_scores[upper_sam_mask])
+
+            # upper threshold for cocoa_final_list
+
+            cocoa_final_list = cocoa_final_list[sam_scores < upper_angle_error]
 
             # generate lots
 
@@ -177,24 +234,6 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             print('The final number of samples is:', num_lot_reps)
 
-            # final sam list
-
-            # zeros = 1e-3 * np.ones((1, cocoa_final_list.shape[-1]))
-            # sam_scores = np.arccos(np.matmul(cocoa_final_list, zeros.T) / np.matmul(
-            #     np.linalg.norm(cocoa_final_list, axis=-1, keepdims=True),
-            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
-
-            # zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.shape[-1]))
-            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list, zeros.T) / np.matmul(
-            #     np.linalg.norm(cocoa_lot_final_list, axis=-1, keepdims=True),
-            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
-
-            zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.mean(axis=1).shape[-1]))
-            sam_scores = np.arccos(np.matmul(cocoa_lot_final_list.mean(axis=1), zeros.T) / np.matmul(
-                np.linalg.norm(cocoa_lot_final_list.mean(axis=1), axis=-1, keepdims=True),
-                np.linalg.norm(zeros, axis=-1, keepdims=True).T))
-
-            cocoa_sam_list.append(sam_scores)
 
         # plot cocoa_sam_list with labels in colors
 
@@ -231,8 +270,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.xlabel('Sample Index')
             plt.ylabel('SAM')
-            plt.ylim([0.5, 0.64])
-            # plt.ylim([0.25, 2.5])
+            # plt.ylim([0.5, 0.64])
+            plt.ylim([0.25, 2.5])
 
             plt.grid()
             plt.legend()
@@ -273,8 +312,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.xlabel('Sample Index')
             plt.ylabel('SAM')
-            plt.ylim([0.5, 0.64])
-            # plt.ylim([0.25, 2.5])
+            # plt.ylim([0.5, 0.64])
+            plt.ylim([0.25, 2.5])
 
             plt.grid()
             plt.legend()

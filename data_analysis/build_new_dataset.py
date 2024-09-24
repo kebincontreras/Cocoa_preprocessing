@@ -7,11 +7,9 @@ from scipy.io import loadmat
 from sklearn.cluster import k_means
 
 # Definición de directorios base y subdirectorios para organizar datos y resultados
-base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
-banda_dir = os.path.join(base_dir, "Anexos")
-bw_dir = os.path.join(base_dir, "bw_ref")
-lote_dir = os.path.join(base_dir, "data")
-results_dir = os.path.join("results")
+base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
+band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
+results_dir = os.path.join("samples/results_old")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)
@@ -29,44 +27,84 @@ num_lot_reps = 1000
 num_samples_train = 143
 num_samples_test = 68
 
-full_cocoa_paths = {'train': {0: "L1F60H096R290324C070524VISTRAIFULL.mat",
-                              1: "L2F66H144R310324C070524VISTRAIFULL.mat",
-                              2: "L2F73H144E270624C240724VISTRAIFULL.mat",
-                              3: "L3F84H192R020424C090524VISTRAIFULL.mat",
-                              4: "L1F85H110E270624C240724VISTRAIFULL.mat",
-                              5: "L4F92H264R130424C090524VISTRAIFULL.mat",
-                              6: "L3F94H216E270624C240724VISTRAIFULL.mat",
-                              7: "L4F96H252E270624C240724VISTRAIFULL.mat",
-                              },
-                    'test': {0: "L1F60H096R290324C070524VISTESTFULL.mat",
-                             1: "L2F66H144R310324C070524VISTESTFULL.mat",
-                             2: "L2F73H144E270624C250724VISTESTFULL.mat",
-                             3: "L3F84H192R020424C090524VISTESTFULL.mat",
-                             4: "L1F85H110E270624C250724VISTESTFULL.mat",
-                             5: "L4F92H264R130424C090524VISTESTFULL.mat",
-                             6: "L3F94H216E270624C250724VISTESTFULL.mat",
-                             7: "L4F96H252E270624C250724VISTESTFULL.mat",
-                             }
+full_cocoa_paths = {'train': {0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
+                                  "B": "blanco.mat",
+                                  "N": "negro.mat"},
+                              1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
+                                  "B": "blanco.mat",
+                                  "N": "negro.mat"},
+                              2: {"L": "L7F73H144E270624C240724VISTRAIFULL.mat",
+                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
+                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat"},
+                              3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
+                                  "B": "blanco.mat",
+                                  "N": "negro.mat"},
+                              4: {"L": "L6F85H110E270624C240724VISTRAIFULL.mat",
+                                  "B": "B6F85H110E270624C240724VISTRAIFULL.mat",
+                                  "N": "N6F85H110E270624C240724VISTRAIFULL.mat"},
+                              5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
+                                  "B": "blanco.mat",
+                                  "N": "negro.mat"},
+                              6: {"L": "L8F94H216E270624C240724VISTRAIFULL.mat",
+                                  "B": "B8F94H216E270624C240724VISTRAIFULL.mat",
+                                  "N": "N8F94H216E270624C240724VISTRAIFULL.mat"},
+                              # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
+                              #     "B": "blanco.mat",
+                              #     "N": "negro.mat"},
+                              7: {"L": "L9F96H252E270624C240724VISTRAIFULL.mat",
+                                  "B": "B9F96H252E270624C240724VISTRAIFULL.mat",
+                                  "N": "N9F96H252E270624C240724VISTRAIFULL.mat"}},
+                    'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
+                                 "B": "blanco.mat",
+                                 "N": "negro.mat"},
+                             1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
+                                 "B": "blanco.mat",
+                                 "N": "negro.mat"},
+                             2: {"L": "L7F73H144E270624C250724VISTESTFULL.mat",
+                                 "B": "B7F73H144E270624C250724VISTESTFULL.mat",
+                                 "N": "N7F73H144E270624C250724VISTESTFULL.mat"},
+                             3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
+                                 "B": "blanco.mat",
+                                 "N": "negro.mat"},
+                             4: {"L": "L6F85H110E270624C250724VISTESTFULL.mat",
+                                 "B": "B6F85H110E270624C250724VISTESTFULL.mat",
+                                 "N": "N6F85H110E270624C250724VISTESTFULL.mat"},
+                             5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
+                                 "B": "blanco.mat",
+                                 "N": "negro.mat"},
+                             6: {"L": "L8F94H216E270624C250724VISTESTFULL.mat",
+                                 "B": "B8F94H216E270624C250724VISTESTFULL.mat",
+                                 "N": "N8F94H216E270624C250724VISTESTFULL.mat"},
+                             # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTESTFULL.mat",
+                             #     "B": "blanco.mat",
+                             #     "N": "negro.mat"},
+                             7: {"L": "L9F96H252E270624C250724VISTESTFULL.mat",
+                                 "B": "B9F96H252E270624C250724VISTESTFULL.mat",
+                                 "N": "N9F96H252E270624C250724VISTESTFULL.mat"}},
                     }
 
-# black and white refs
+# black and white refs + efficiency indices
 
-white_ref = np.loadtxt(os.path.join(bw_dir, 'BLANCO_ESCALADO_K.csv'), delimiter=',')
+white_ref = loadmat(os.path.join(base_dir, full_cocoa_paths['train'][0]['B']))['spectral_data'].mean(axis=0)
+eff_indices = white_ref >= white_ref.min() + eff_percentage * (white_ref.max() - white_ref.min())
+num_bands = eff_indices.sum()
 
-efficiency_indices = white_ref >= white_ref.min() + eff_percentage * (white_ref.max() - white_ref.min())
+wavelengths = loadmat(os.path.join(base_dir, 'wavelengths_VIS.mat'))['wavelengths'].squeeze()
+wavelengths = wavelengths[eff_indices]
 
-white_ref = white_ref[efficiency_indices]
-black_ref = np.loadtxt(os.path.join(bw_dir, 'NEGRO_DEEPL_KEBIN.csv'), delimiter=',')[efficiency_indices]
+# # belt
 
-# Cargar datos desde archivos .mat
-BANDA = loadmat(os.path.join(banda_dir, "BANDATRANSPORTADORAC090524.mat"))['BANDA'][:, efficiency_indices]
-wavelengths = BANDA[0, :]
-# conveyor_belt = (BANDA[1:] - black_ref) / (white_ref - black_ref)
-conveyor_belt = BANDA[1:]
+black_ref = loadmat(os.path.join(base_dir, full_cocoa_paths['train'][0]['N']))['spectral_data'].mean(axis=0)
+
+white_ref = white_ref[eff_indices]
+black_ref = black_ref[eff_indices]
+
+BANDA = loadmat(band_dir)['BANDA'][:, eff_indices]
+conveyor_belt = (BANDA[1:] - black_ref[None, :]) / (white_ref[None, :] - black_ref[None, :])
 conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='auto', random_state=0)
 
-
 # Append new data to dataset
+
 def append_to_dataset(dataset, new_data):
     current_shape = dataset.shape
     new_shape = (current_shape[0] + new_data.shape[0], current_shape[1], current_shape[2])
@@ -81,18 +119,14 @@ def append_to_label_dataset(dataset, new_data):
     dataset[current_shape[0]:] = new_data
 
 
-def moving_average(a, n=3):
-    ret = np.cumsum(a, axis=1, dtype=float)
-    ret[:, n:] = ret[:, n:] - ret[:, :-n]
-    return ret[:, n - 1:] / n
-
 
 for subset_name, cocoa_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
     cocoa_sam_list = []
+    label_sam_list = []
 
-    with h5py.File(os.path.join(results_dir, f'tester_{subset_name}_real_cocoa_hdsp_oneCenter_squarelots.h5'),
+    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp_oneCenter_squarelots_BAW.h5'),
                    'w') as d:
         wavelengths = d.create_dataset('wavelengths', data=wavelengths)
         dataset = d.create_dataset('spec', shape=(0, lot_size, len(white_ref)),
@@ -101,23 +135,29 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
 
         for label, cocoa_filename in cocoa_filenames.items():
+
             print(f"Processing {cocoa_filename}")
             try:
-                COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['LCACAO'][:, efficiency_indices]
+                white = loadmat(os.path.join(base_dir, cocoa_filename['B']))['BLANCO'].mean(axis=0)[eff_indices]
             except:
-                COCOA = loadmat(os.path.join(lote_dir, cocoa_filename))['CAPTURA_SPN'][:, efficiency_indices]
+                white = loadmat(os.path.join(base_dir, cocoa_filename['B']))['spectral_data'].mean(axis=0)[eff_indices]
 
-            wavelengths = COCOA[0]
-            # cocoa_lot = (COCOA[1:] - black_ref) / (white_ref - black_ref)
-            cocoa_lot = COCOA[1:]
+            try:
+                black = loadmat(os.path.join(base_dir, cocoa_filename['N']))['NEGRO'].mean(axis=0)[eff_indices]
+            except:
+                black = loadmat(os.path.join(base_dir, cocoa_filename['N']))['spectral_data'].mean(axis=0)[eff_indices]
 
-            cocoa_lot = np.delete(cocoa_lot, 8719,
-                                  axis=0) if cocoa_filename == 'L2F66R310324C070524TESTFULL.mat' else cocoa_lot
+            try:
+                cocoa = loadmat(os.path.join(base_dir, cocoa_filename['L']))['CAPTURA_SPN'][:, eff_indices]
+            except:
+                cocoa = loadmat(os.path.join(base_dir, cocoa_filename['L']))['LCACAO'][:, eff_indices]
+
+            cocoa = np.delete(cocoa, 8719, axis=0) if cocoa_filename == 'L2F66R310324C070524TESTFULL.mat' else cocoa
 
             # sam
 
-            scores = np.arccos(np.matmul(cocoa_lot, conveyor_cluster_centers.T) / np.matmul(
-                np.linalg.norm(cocoa_lot, axis=-1, keepdims=True),
+            scores = np.arccos(np.matmul(cocoa, conveyor_cluster_centers.T) / np.matmul(
+                np.linalg.norm(cocoa, axis=-1, keepdims=True),
                 np.linalg.norm(conveyor_cluster_centers, axis=-1, keepdims=True).T))
 
             distance_Bands = np.min(scores, axis=-1)
@@ -140,7 +180,7 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                     selected_indices = cocoa_bean_indices[center_index - center_dev:center_index + center_dev + (
                         1 if num_samples_per_cocoa_bean % 2 == 1 else 0)]
 
-                    cocoa_bean_samples = cocoa_lot[selected_indices]
+                    cocoa_bean_samples = cocoa[selected_indices]
                     cocoa_bean_list.append(cocoa_bean_samples)
                 else:
                     # print('Invalid cocoa bean range', c_idx, 'This cocoa bean will be skipped')
@@ -151,7 +191,7 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
             # append to dataset
 
             cocoa_final_list = np.concatenate(cocoa_bean_list, axis=0)
-            cocoa_final_list = (cocoa_final_list - black_ref) / (white_ref - black_ref)
+            cocoa_final_list = (cocoa_final_list - black) / (white - black)
 
             if num_samples_train > 0 or num_samples_test > 0:
                 num_samples = num_samples_train if subset_name == 'train' else num_samples_test
@@ -179,20 +219,20 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             # final sam list
 
-            # zeros = 1e-3 * np.ones((1, cocoa_final_list.shape[-1]))
-            # sam_scores = np.arccos(np.matmul(cocoa_final_list, zeros.T) / np.matmul(
-            #     np.linalg.norm(cocoa_final_list, axis=-1, keepdims=True),
-            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
+            zeros = 1e-3 * np.ones((1, cocoa_final_list.shape[-1]))
+            sam_scores = np.arccos(np.matmul(cocoa_final_list, zeros.T) / np.matmul(
+                np.linalg.norm(cocoa_final_list, axis=-1, keepdims=True),
+                np.linalg.norm(zeros, axis=-1, keepdims=True).T))
 
             # zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.shape[-1]))
             # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list, zeros.T) / np.matmul(
             #     np.linalg.norm(cocoa_lot_final_list, axis=-1, keepdims=True),
             #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
 
-            zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.mean(axis=1).shape[-1]))
-            sam_scores = np.arccos(np.matmul(cocoa_lot_final_list.mean(axis=1), zeros.T) / np.matmul(
-                np.linalg.norm(cocoa_lot_final_list.mean(axis=1), axis=-1, keepdims=True),
-                np.linalg.norm(zeros, axis=-1, keepdims=True).T))
+            # zeros = 1e-3 * np.ones((1, cocoa_lot_final_list.mean(axis=1).shape[-1]))
+            # sam_scores = np.arccos(np.matmul(cocoa_lot_final_list.mean(axis=1), zeros.T) / np.matmul(
+            #     np.linalg.norm(cocoa_lot_final_list.mean(axis=1), axis=-1, keepdims=True),
+            #     np.linalg.norm(zeros, axis=-1, keepdims=True).T))
 
             cocoa_sam_list.append(sam_scores)
 
@@ -231,8 +271,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.xlabel('Sample Index')
             plt.ylabel('SAM')
-            plt.ylim([0.5, 0.64])
-            # plt.ylim([0.25, 2.5])
+            # plt.ylim([0.5, 0.64])
+            plt.ylim([0.25, 2.5])
 
             plt.grid()
             plt.legend()
@@ -273,8 +313,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.xlabel('Sample Index')
             plt.ylabel('SAM')
-            plt.ylim([0.5, 0.64])
-            # plt.ylim([0.25, 2.5])
+            # plt.ylim([0.5, 0.64])
+            plt.ylim([0.25, 2.5])
 
             plt.grid()
             plt.legend()
