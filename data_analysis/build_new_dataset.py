@@ -103,6 +103,9 @@ BANDA = loadmat(band_dir)['BANDA'][:, eff_indices]
 conveyor_belt = (BANDA[1:] - black_ref[None, :]) / (white_ref[None, :] - black_ref[None, :])
 conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='auto', random_state=0)
 
+# Cargar datos desde archivos .mat
+wavelengths = BANDA[0, :]
+
 # Append new data to dataset
 
 def append_to_dataset(dataset, new_data):
@@ -119,14 +122,16 @@ def append_to_label_dataset(dataset, new_data):
     dataset[current_shape[0]:] = new_data
 
 
-
 for subset_name, cocoa_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
     cocoa_sam_list = []
     label_sam_list = []
 
-    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp_oneCenter_squarelots_BAW.h5'),
+    black_list = []
+    white_list = []
+
+    with h5py.File(os.path.join(results_dir, f'tester_{subset_name}_real_cocoa_hdsp_oneCenter_squarelots_BAW.h5'),
                    'w') as d:
         wavelengths = d.create_dataset('wavelengths', data=wavelengths)
         dataset = d.create_dataset('spec', shape=(0, lot_size, len(white_ref)),
@@ -151,6 +156,11 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                 cocoa = loadmat(os.path.join(base_dir, cocoa_filename['L']))['CAPTURA_SPN'][:, eff_indices]
             except:
                 cocoa = loadmat(os.path.join(base_dir, cocoa_filename['L']))['LCACAO'][:, eff_indices]
+
+            black_list.append(black)
+            white_list.append(white)
+
+            continue
 
             cocoa = np.delete(cocoa, 8719, axis=0) if cocoa_filename == 'L2F66R310324C070524TESTFULL.mat' else cocoa
 
@@ -242,12 +252,59 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
         ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
         colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
 
+        wavelengths = BANDA[0, :]
+        black_list = np.stack(black_list, axis=0)
+        white_list = np.stack(white_list, axis=0)
+
         alpha = 0.5
         scale = 1
         plt.figure(figsize=(scale * 10, scale * 5))
 
+        for i, black in enumerate(black_list):
+            if entrega_numbers[i] == 1:
+                plt.plot(black.squeeze(), color=colors[i], alpha=alpha)
+                plt.scatter(black.min(), black.min(), color=colors[i],
+                            label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+
+        plt.title('Black Ref - E1')
+        plt.xlabel('Wavelength')
+        plt.ylabel('Intensity')
+
+        plt.grid()
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig(f'{results_dir}/black_{subset_name}.svg')
+        plt.close()
+
+        plt.figure(figsize=(scale * 10, scale * 5))
+
+        for i, white in enumerate(white_list):
+            # if entrega_numbers[i] == 1:
+            plt.plot(white.squeeze(), color=colors[i], alpha=alpha)
+            plt.scatter(wavelengths.min(), white.min(), color=colors[i],
+                        label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+
+        plt.title('White Ref')
+        plt.xlabel('Wavelength')
+        plt.ylabel('Intensity')
+
+        plt.grid()
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig(f'{results_dir}/white_{subset_name}.svg')
+        plt.close()
+
+        entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
+        ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
+        colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
+
+        plt.figure(figsize=(scale * 10, scale * 5))
+
         for i, cocoa_sam in enumerate(cocoa_sam_list):
-            plt.plot(cocoa_sam.squeeze(), color=colors[i], alpha=alpha)
+            x_index = np.linspace(0, cocoa_sam.shape[0] - 1, cocoa_sam.shape[0])
+            plt.plot(x_index, cocoa_sam.squeeze(), color=colors[i], alpha=alpha)
             plt.scatter(cocoa_sam.min(), cocoa_sam.min(), color=colors[i],
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
@@ -259,7 +316,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         plt.tight_layout()
         plt.savefig(f'{results_dir}/cocoa_sam_{subset_name}.svg')
-        plt.show()
+        # plt.show()
+        plt.close()
 
         scale = 1.5
         plt.figure(figsize=(scale * 10, scale * 5))
@@ -279,7 +337,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         plt.tight_layout()
         plt.savefig(f'{results_dir}/all_cocoa_sam_{subset_name}.svg')
-        plt.show()
+        # plt.show()
+        plt.close()
 
         # fila india
 
@@ -301,7 +360,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         plt.tight_layout()
         plt.savefig(f'{results_dir}/india_cocoa_sam_{subset_name}.svg')
-        plt.show()
+        # plt.show()
+        plt.close()
 
         scale = 1.5
         plt.figure(figsize=(scale * 10, scale * 5))
@@ -321,6 +381,7 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
         plt.tight_layout()
         plt.savefig(f'{results_dir}/india_all_cocoa_sam_{subset_name}.svg')
-        plt.show()
+        # plt.show()
+        plt.close()
 
         break

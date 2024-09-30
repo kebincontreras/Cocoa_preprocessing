@@ -6,3 +6,5 @@ results_old/
 results/
 
 *.mat
+
+__pycache__/

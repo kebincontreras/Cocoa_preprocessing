@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 
 
-with h5py.File('results/train_real_cocoa_hdsp_oneCenter_squarelots.h5', 'r') as f:
+# with h5py.File('resultstrain_real_cocoa_hdsp_oneCenter_squarelots.h5', 'r') as f:
+with h5py.File('/home/enmartz/Jobs/cacao/Cocoa_preprocessing/data_analysis/samples/results_old/train_real_cocoa_hdsp_oneCenter_squarelots_BAW.h5', 'r') as f:
     wavelengths = f['wavelengths'][:]
     X = f['spec'][:]
     y = f['label'][:]

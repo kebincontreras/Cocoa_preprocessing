@@ -17,7 +17,7 @@ cluster_centers, labels, _ = k_means(X, n_clusters=3, n_init='auto', random_stat
 
 # build h5 dataset
 
-with h5py.File(os.path.join('results_old', f'{subset_name}_cocoa_hdsp_sam015_ultra_small_kmeans3.h5'), 'w') as d:
+with h5py.File(os.path.join('../results_old', f'{subset_name}_cocoa_hdsp_sam015_ultra_small_kmeans3.h5'), 'w') as d:
     dataset = d.create_dataset('spec', shape=(0, 2000), maxshape=(None, 2000), chunks=(256, 2000),
                                dtype=np.float32)
     labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)

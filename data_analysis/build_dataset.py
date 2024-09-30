@@ -196,6 +196,8 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             cocoa_sam_list.append(sam_scores)
 
+            print('min cocoa value:', cocoa_final_list.min())
+
         # plot cocoa_sam_list with labels in colors
 
         entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
