@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
+from sklearn.decomposition import PCA
+
 
 # functions
 
@@ -30,10 +32,14 @@ efficiency_range = [500, 900]  # nanometers
 entrega1_white_scaling = 21.0  # white / this
 conveyor_belt_samples = 200  # for sam metric
 angle_error = 0.25  # angle error between conveyor belt and cocoa signatures
-max_num_samples = 1000
+max_num_samples = 1000  # selected samples from lot with higher sam
+
+cocoa_batch_size = 50  # guillotine methodology
+cocoa_batch_samples = 1000  # number of batch samples
 
 plot_num_samples = 500
-debug = True
+debug = False
+debug_pca = True
 
 # set path to cocoa dataset
 
@@ -130,7 +136,12 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     cocoa_bean_dataset = []
     label_dataset = []
 
+    cocoa_bean_batch_mean_dataset = []
+    label_batch_mean_dataset = []
+
     for label, lot_filename in lot_filenames.items():
+        print(f"Processing {lot_filename['E']} - {lot_filename['L']}")
+
         white = next(
             v for k, v in loadmat(os.path.join(base_dir, lot_filename['B'])).items() if not k.startswith('__'))
         black = next(
@@ -259,32 +270,42 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         cocoa_bean_dataset.append(selected_cocoa_reflectance)
         label_dataset.append(np.ones(selected_cocoa_reflectance.shape[0], dtype=int) * label)
 
+        # shuffle and batch mean
+        cocoa_bean_batch_mean_aux = []
+        for i in range(cocoa_batch_samples):
+            random_indices = np.random.choice(selected_cocoa_reflectance.shape[0], cocoa_batch_size, replace=False)
+            cocoa_bean_batch_mean_aux.append(selected_cocoa_reflectance[random_indices].mean(axis=0))
+
+        cocoa_bean_batch_mean_aux = np.stack(cocoa_bean_batch_mean_aux, axis=0)
+        cocoa_bean_batch_mean_dataset.append(cocoa_bean_batch_mean_aux)
+        label_batch_mean_dataset.append(np.ones(cocoa_bean_batch_mean_aux.shape[0], dtype=int) * label)
+
+
     # compute mean and std of dataset and plot
 
     entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
     ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
     colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
 
-    plt.figure(figsize=(8, 6))
-    for i in range(len(cocoa_bean_dataset)):
-        X_class = cocoa_bean_dataset[i]
-        mean = X_class.mean(axis=0)
-        std = X_class.std(axis=0)
-        plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-        plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.1)
+    if debug_pca:
+        plt.figure(figsize=(8, 6))
+        for i in range(len(cocoa_bean_dataset)):
+            X_class = cocoa_bean_dataset[i]
+            mean = X_class.mean(axis=0)
+            std = X_class.std(axis=0)
+            plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+            plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
 
-    plt.legend()
-    plt.xlabel('Wavelegth [nm]')
-    plt.ylabel('Intensity')
-    plt.title('Mean and std of Cocoa dataset by class')
+        plt.legend()
+        plt.xlabel('Wavelength [nm]')
+        plt.ylabel('Reflectance')
+        plt.title('Mean and std of Cocoa dataset by class')
 
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
+        plt.grid()
+        plt.tight_layout()
+        plt.show()
 
     # compute PCA with X_mean using sklearn
-
-    from sklearn.decomposition import PCA
 
     full_cocoa_bean_dataset = np.concatenate(cocoa_bean_dataset, axis=0)
     full_label_dataset = np.concatenate(label_dataset, axis=0)
@@ -292,18 +313,55 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(full_cocoa_bean_dataset)
 
+    if debug_pca:
+        plt.figure(figsize=(10, 5))
+        for i in range(len(cocoa_bean_dataset)):
+            X_class = X_pca[full_label_dataset.squeeze() == i]
+            plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
+                        label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+
+        plt.title('Cocoa mean PCA')
+        plt.grid()
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+    # plot cocoa bean batch mean dataset
+
+    plt.figure(figsize=(8, 6))
+    for i in range(len(cocoa_bean_batch_mean_dataset)):
+        X_class = cocoa_bean_batch_mean_dataset[i]
+        mean = X_class.mean(axis=0)
+        std = X_class.std(axis=0)
+        plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+        plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
+
+    plt.legend()
+    plt.xlabel('Wavelength [nm]')
+    plt.ylabel('Reflectance')
+    plt.title('Mean of Cocoa dataset Batch Mean by class')
+
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
+
+    # compute PCA with X_mean using sklearn
+
+    full_cocoa_bean_batch_mean_dataset = np.concatenate(cocoa_bean_batch_mean_dataset, axis=0)
+    full_label_batch_mean_dataset = np.concatenate(label_batch_mean_dataset, axis=0)
+
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(full_cocoa_bean_batch_mean_dataset)
+
     plt.figure(figsize=(10, 5))
-    for i in range(len(cocoa_bean_dataset)):
-        X_class = X_pca[full_label_dataset.squeeze() == i]
+    for i in range(len(cocoa_bean_batch_mean_dataset)):
+        X_class = X_pca[full_label_batch_mean_dataset.squeeze() == i]
         plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
                     label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
     plt.title('Cocoa mean PCA')
     plt.grid()
+
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-
-
-    print('taipo')
