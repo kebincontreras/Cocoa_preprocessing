@@ -22,7 +22,7 @@ def compute_sam(a, b):
 # set main paths
 
 base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
-band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
+# band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
 out_dir = os.path.join("built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
@@ -32,7 +32,7 @@ efficiency_range = [500, 900]  # nanometers
 entrega1_white_scaling = 21.0  # white / this
 conveyor_belt_samples = 200  # for sam metric
 angle_error = 0.25  # angle error between conveyor belt and cocoa signatures
-max_num_samples = 1000  # selected samples from lot with higher sam
+max_num_samples = 3000  # selected samples from lot with higher sam
 
 cocoa_batch_size = 50  # guillotine methodology
 cocoa_batch_samples = 1000  # number of batch samples
@@ -156,6 +156,9 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         lot = lot[:, efficiency_threshold]
         lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66R310324C070524TESTFULL.mat' else lot
 
+        if '1' in lot_filename['E']:
+            lot = lot + black.mean(axis=0)[None, ...]
+
         if debug:
             plt.figure(figsize=(8, 8))
             plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
@@ -234,6 +237,9 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         # get cocoa lot with reflectance
 
         selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
+        # selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+        # mean_selected_cocoa_reflectance = selected_cocoa_reflectance.mean(axis=0)
+        # std_selected_cocoa_reflectance = selected_cocoa_reflectance.std(axis=0)
 
         if debug:
             plt.figure(figsize=(8, 8))
@@ -294,7 +300,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             mean = X_class.mean(axis=0)
             std = X_class.std(axis=0)
             plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-            plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
+            plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
         plt.legend()
         plt.xlabel('Wavelength [nm]')
@@ -334,7 +340,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         mean = X_class.mean(axis=0)
         std = X_class.std(axis=0)
         plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-        plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
+        plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
     plt.legend()
     plt.xlabel('Wavelength [nm]')

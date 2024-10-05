@@ -303,7 +303,7 @@ def main(cocoa_batch_size, cocoa_batch_samples):
                 mean = X_class.mean(axis=0)
                 std = X_class.std(axis=0)
                 plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-                plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
+                plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
             plt.legend()
             plt.xlabel('Wavelength [nm]')
@@ -342,7 +342,7 @@ def main(cocoa_batch_size, cocoa_batch_samples):
                 mean = X_class.mean(axis=0)
                 std = X_class.std(axis=0)
                 plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-                plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2)
+                plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
             plt.legend()
             plt.xlabel('Wavelength [nm]')

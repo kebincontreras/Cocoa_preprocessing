@@ -43,80 +43,81 @@ debug_pca = True
 
 # set path to cocoa dataset
 
-full_cocoa_paths = {'train': {0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
-                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
-                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              2: {"L": "L7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
-                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              4: {"L": "L6F85H110E270624C240724VISTRAIFULL.mat",
-                                  "B": "B6F85H110E270624C240724VISTRAIFULL.mat",
-                                  "N": "N6F85H110E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
-                                  "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              6: {"L": "L8F94H216E270624C240724VISTRAIFULL.mat",
-                                  "B": "B8F94H216E270624C240724VISTRAIFULL.mat",
-                                  "N": "N8F94H216E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
-                              #     "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                              #     "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-                              #     "E": "Entrega 1"},
-                              7: {"L": "L9F96H252E270624C240724VISTRAIFULL.mat",
-                                  "B": "B9F96H252E270624C240724VISTRAIFULL.mat",
-                                  "N": "N9F96H252E270624C240724VISTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              },
-                    # 'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          2: {"L": "L7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "N": "N7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          4: {"L": "L6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "B": "B6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "N": "N6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          6: {"L": "L8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "B": "B8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "N": "N8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          7: {"L": "L5F96HXXXRDDMMAAC090524VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          8: {"L": "L9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "B": "B9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "N": "N9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"}},
-                    }
+full_cocoa_paths = {'train': {
+    0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
+        "B": "blanco.mat",
+        "N": "negro.mat",
+        "E": "Entrega 1"},
+    # 1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
+    #     "B": "blanco.mat",
+    #     "N": "negro.mat",
+    #     "E": "Entrega 1"},
+    # 2: {"L": "L7F73H144E270624C240724VISTRAIFULL.mat",
+    #     "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
+    #     "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
+    #     "E": "Entrega 2"},
+    # 3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
+    #     "B": "blanco.mat",
+    #     "N": "negro.mat",
+    #     "E": "Entrega 1"},
+    # 4: {"L": "L6F85H110E270624C240724VISTRAIFULL.mat",
+    #     "B": "B6F85H110E270624C240724VISTRAIFULL.mat",
+    #     "N": "N6F85H110E270624C240724VISTRAIFULL.mat",
+    #     "E": "Entrega 2"},
+    # 5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
+    #     "B": "blanco.mat",
+    #     "N": "negro.mat",
+    #     "E": "Entrega 1"},
+    # 6: {"L": "L8F94H216E270624C240724VISTRAIFULL.mat",
+    #     "B": "B8F94H216E270624C240724VISTRAIFULL.mat",
+    #     "N": "N8F94H216E270624C240724VISTRAIFULL.mat",
+    #     "E": "Entrega 2"},
+    # 0: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
+    #     "B": "blanco.mat",
+    #     "N": "negro.mat",
+    #     "E": "Entrega 1"},
+    1: {"L": "L9F96H252E270624C240724VISTRAIFULL.mat",
+        "B": "B9F96H252E270624C240724VISTRAIFULL.mat",
+        "N": "N9F96H252E270624C240724VISTRAIFULL.mat",
+        "E": "Entrega 2"},
+},
+    # 'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
+    #              "B": "blanco.mat",
+    #              "N": "negro.mat",
+    #              "E": "Entrega 1"},
+    #          1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
+    #              "B": "blanco.mat",
+    #              "N": "negro.mat",
+    #              "E": "Entrega 1"},
+    #          2: {"L": "L7F73H144E270624C250724VISTESTFULL.mat",
+    #              "B": "B7F73H144E270624C250724VISTESTFULL.mat",
+    #              "N": "N7F73H144E270624C250724VISTESTFULL.mat",
+    #              "E": "Entrega 2"},
+    #          3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
+    #              "B": "blanco.mat",
+    #              "N": "negro.mat",
+    #              "E": "Entrega 1"},
+    #          4: {"L": "L6F85H110E270624C250724VISTESTFULL.mat",
+    #              "B": "B6F85H110E270624C250724VISTESTFULL.mat",
+    #              "N": "N6F85H110E270624C250724VISTESTFULL.mat",
+    #              "E": "Entrega 2"},
+    #          5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
+    #              "B": "blanco.mat",
+    #              "N": "negro.mat",
+    #              "E": "Entrega 1"},
+    #          6: {"L": "L8F94H216E270624C250724VISTESTFULL.mat",
+    #              "B": "B8F94H216E270624C250724VISTESTFULL.mat",
+    #              "N": "N8F94H216E270624C250724VISTESTFULL.mat",
+    #              "E": "Entrega 2"},
+    #          7: {"L": "L5F96HXXXRDDMMAAC090524VISTESTFULL.mat",
+    #              "B": "blanco.mat",
+    #              "N": "negro.mat",
+    #              "E": "Entrega 1"},
+    #          8: {"L": "L9F96H252E270624C250724VISTESTFULL.mat",
+    #              "B": "B9F96H252E270624C250724VISTESTFULL.mat",
+    #              "N": "N9F96H252E270624C250724VISTESTFULL.mat",
+    #              "E": "Entrega 2"}},
+}
 
 # load wavelengths
 
@@ -234,7 +235,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         # get cocoa lot with reflectance
 
         selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-        # selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+        # max
+        selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
         # mean_selected_cocoa_reflectance = selected_cocoa_reflectance.mean(axis=0)
         # std_selected_cocoa_reflectance = selected_cocoa_reflectance.std(axis=0)
 
@@ -283,12 +285,11 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         cocoa_bean_batch_mean_dataset.append(cocoa_bean_batch_mean_aux)
         label_batch_mean_dataset.append(np.ones(cocoa_bean_batch_mean_aux.shape[0], dtype=int) * label)
 
-
     # compute mean and std of dataset and plot
 
-    entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
-    ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
-    colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
+    entrega_numbers = [1, 2]
+    ferm_levels = [60, 96]
+    colors = ['b', 'g']
 
     if debug_pca:
         plt.figure(figsize=(8, 6))
