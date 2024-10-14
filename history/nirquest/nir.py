@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 # Ruta a la carpeta que contiene los archivos .mat
-folder_path = '.'
+folder_path = ''
 
 
 # Función para cargar y procesar espectros

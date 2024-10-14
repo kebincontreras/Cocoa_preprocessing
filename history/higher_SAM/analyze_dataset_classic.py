@@ -21,7 +21,7 @@ def compute_sam(a, b):
 
 base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
 band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
-out_dir = os.path.join("built_datasets")
+out_dir = os.path.join("../../built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
 # set variables

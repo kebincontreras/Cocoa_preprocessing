@@ -5,7 +5,7 @@ from scipy.io import loadmat
 
 # Directorio donde se encuentran los archivos
 # base_dir = r"C:\Users\USUARIO\Documents\GitHub\Dataset\Lab_hdsp_cocoa_experimento_jorge"
-base_dir = "."
+base_dir = ""
 
 # Cargar los archivos
 cacao_NIR = loadmat(os.path.join(base_dir, 'experimento_cacao_3_fermantation_NIR.mat'))

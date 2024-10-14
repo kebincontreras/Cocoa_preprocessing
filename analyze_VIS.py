@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 from sklearn.decomposition import PCA
+from datetime import datetime
 
 
 # functions
@@ -21,15 +22,14 @@ def compute_sam(a, b):
 
 # set main paths
 
-base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_NIR"
-# band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
+base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
 out_dir = os.path.join("built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
 # set variables
 
-efficiency_range = [1000, 2400]  # nanometers
-entrega1_white_scaling = 1.0  # white / this
+efficiency_range = [500, 850]  # nanometers
+entrega1_white_scaling = 21.0  # white / this
 conveyor_belt_samples = 200  # for sam metric
 angle_error = 0.25  # angle error between conveyor belt and cocoa signatures
 max_num_samples = 1000  # selected samples from lot with higher sam
@@ -43,77 +43,87 @@ debug_pca = True
 
 # set path to cocoa dataset
 
-full_cocoa_paths = {'train': {0: {"L": "L1F60H096R290324C030724NIRTRAIFULL.mat",
-                                  "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "E": "Entrega 1"},
-                              1: {"L": "L2F66H144R310324C030724NIRTRAIFULL.mat",
-                                  "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "E": "Entrega 1"},
-                              2: {"L": "L2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
-                                  "E": "Entrega 2"},
-                              3: {"L": "L3F84H192R020424C020724NIRTRAIFULL.mat",
-                                  "B": "B1F85H110E270624C100724NIRTRAIFULL.mat",
-                                  "N": "N1F85H110E270624C100724NIRTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              4: {"L": "L1F85H110E270624C100724NIRTRAIFULL.mat",
-                                  "B": "B1F85H110E270624C100724NIRTRAIFULL.mat",
-                                  "N": "N1F85H110E270624C100724NIRTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              5: {"L": "L4F92H264R130424C030724NIRTRAIFULL.mat",
-                                  "B": "B3F94H216E270624C180724NIRTRAIFULL.mat",
-                                  "N": "N3F94H216E270624C180724NIRTRAIFULL.mat",
-                                  "E": "Entrega 1"},
-                              6: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
-                                  "B": "B3F94H216E270624C180724NIRTRAIFULL.mat",
-                                  "N": "N3F94H216E270624C180724NIRTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              7: {"L": "L4F96H252E270624C180724NIRTRAIFULL.mat",
-                                  "B": "B4F96H252E270624C180724NIRTRAIFULL.mat",
-                                  "N": "N4F96H252E270624C180724NIRTRAIFULL.mat",
-                                  "E": "Entrega 2"},
-                              },
-                    # 'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
-                    #              "B": "blanco.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
-                    #              "B": "blanco.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          2: {"L": "L7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "B": "B7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "N": "N7F73H144E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
-                    #              "B": "blanco.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          4: {"L": "L6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "B": "B6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "N": "N6F85H110E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
-                    #              "B": "blanco.mat",
-                    #              "N": "negro.mat",
-                    #              "E": "Entrega 1"},
-                    #          6: {"L": "L8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "B": "B8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "N": "N8F94H216E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"},
-                    #          7: {"L": "L9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "B": "B9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "N": "N9F96H252E270624C250724VISTESTFULL.mat",
-                    #              "E": "Entrega 2"}},
-                    }
+full_cocoa_paths = {
+    'train': {0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
+                  "B": "blanco.mat",
+                  "N": "negro.mat",
+                  "E": "Entrega 1"},
+              1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
+                  "B": "blanco.mat",
+                  "N": "negro.mat",
+                  "E": "Entrega 1"},
+              2: {"L": "L2F73H144E270624C240724VISTRAIFULL.mat",
+                  "B": "B2F73H144E270624C240724VISTRAIFULL.mat",
+                  "N": "N2F73H144E270624C240724VISTRAIFULL.mat",
+                  "E": "Entrega 2"},
+              3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
+                  "B": "blanco.mat",
+                  "N": "negro.mat",
+                  "E": "Entrega 1"},
+              4: {"L": "L1F85H110E270624C240724VISTRAIFULL.mat",
+                  "B": "B1F85H110E270624C240724VISTRAIFULL.mat",
+                  "N": "N1F85H110E270624C240724VISTRAIFULL.mat",
+                  "E": "Entrega 2"},
+              5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
+                  "B": "blanco.mat",
+                  "N": "negro.mat",
+                  "E": "Entrega 1"},
+              6: {"L": "L3F94H216E270624C240724VISTRAIFULL.mat",
+                  "B": "B3F94H216E270624C240724VISTRAIFULL.mat",
+                  "N": "N3F94H216E270624C240724VISTRAIFULL.mat",
+                  "E": "Entrega 2"},
+              # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
+              #     "B": "blanco.mat",
+              #     "N": "negro.mat",
+              #     "E": "Entrega 1"},
+              7: {"L": "L4F96H252E270624C240724VISTRAIFULL.mat",
+                  "B": "B4F96H252E270624C240724VISTRAIFULL.mat",
+                  "N": "N4F96H252E270624C240724VISTRAIFULL.mat",
+                  "E": "Entrega 2"},
+              },
+    'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
+                 "B": "blanco.mat",
+                 "N": "negro.mat",
+                 "E": "Entrega 1"},
+             1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
+                 "B": "blanco.mat",
+                 "N": "negro.mat",
+                 "E": "Entrega 1"},
+             2: {"L": "L2F73H144E270624C250724VISTESTFULL.mat",
+                 "B": "B2F73H144E270624C250724VISTESTFULL.mat",
+                 "N": "N2F73H144E270624C250724VISTESTFULL.mat",
+                 "E": "Entrega 2"},
+             3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
+                 "B": "blanco.mat",
+                 "N": "negro.mat",
+                 "E": "Entrega 1"},
+             4: {"L": "L1F85H110E270624C250724VISTESTFULL.mat",
+                 "B": "B1F85H110E270624C250724VISTESTFULL.mat",
+                 "N": "N1F85H110E270624C250724VISTESTFULL.mat",
+                 "E": "Entrega 2"},
+             5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
+                 "B": "blanco.mat",
+                 "N": "negro.mat",
+                 "E": "Entrega 1"},
+             6: {"L": "L3F94H216E270624C250724VISTESTFULL.mat",
+                 "B": "B3F94H216E270624C250724VISTESTFULL.mat",
+                 "N": "N3F94H216E270624C250724VISTESTFULL.mat",
+                 "E": "Entrega 2"},
+             # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTESTFULL.mat",
+             #     "B": "blanco.mat",
+             #     "N": "negro.mat",
+             #     "E": "Entrega 1"},
+             7: {"L": "L4F96H252E270624C250724VISTESTFULL.mat",
+                 "B": "B4F96H252E270624C250724VISTESTFULL.mat",
+                 "N": "N4F96H252E270624C250724VISTESTFULL.mat",
+                 "E": "Entrega 2"},
+             },
+}
 
 # load wavelengths
 
 wavelengths = next(
-    v for k, v in loadmat(os.path.join(base_dir, 'wavelengths_NIR.mat')).items() if not k.startswith('__')).squeeze()
+    v for k, v in loadmat(os.path.join(base_dir, 'wavelengths_VIS.mat')).items() if not k.startswith('__')).squeeze()
 
 # set threshold between 400 and 900 nm
 
@@ -146,10 +156,10 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         white = white[:, efficiency_threshold.squeeze()]
         black = black[:, efficiency_threshold]
         lot = lot[:, efficiency_threshold]
-        lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66R310324C070524TESTFULL.mat' else lot
+        lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66H144R310324C070524VISTESTFULL.mat' else lot
 
         # if '1' in lot_filename['E']:
-        lot = lot + black.mean(axis=0)[None, ...]
+        #     lot = lot + black.mean(axis=0)[None, ...]
 
         if debug:
             plt.figure(figsize=(8, 8))
@@ -183,8 +193,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
         white = white.mean(axis=0)[None, ...]
         black = black.mean(axis=0)[None, ...]
-        if white.max() > 50000.0:
-            white = white / entrega1_white_scaling
+        if white.max() < 50000.0:
+            white = white * entrega1_white_scaling
 
         # get conveyor belt signatures
 
@@ -229,6 +239,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         # get cocoa lot with reflectance
 
         selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
+        selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+        # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
 
         if debug:
             plt.figure(figsize=(8, 8))
@@ -274,7 +286,6 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         cocoa_bean_batch_mean_aux = np.stack(cocoa_bean_batch_mean_aux, axis=0)
         cocoa_bean_batch_mean_dataset.append(cocoa_bean_batch_mean_aux)
         label_batch_mean_dataset.append(np.ones(cocoa_bean_batch_mean_aux.shape[0], dtype=int) * label)
-
 
     # compute mean and std of dataset and plot
 

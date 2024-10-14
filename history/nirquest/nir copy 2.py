@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
 # Ruta a la carpeta que contiene los archivos .mat
-folder_path = '.'
+folder_path = ''
 
 
 # Función para cargar y procesar espectros

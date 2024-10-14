@@ -11,17 +11,23 @@ base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
 banda_dir = os.path.join(base_dir, "Anexos")
 bw_dir = os.path.join(base_dir, "bw_ref")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
-results_dir = os.path.join("../results")
+results_dir = os.path.join("../../results")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)
 
-angle_error = 0.2
 eff_percentage = 0.2
+angle_error = 0.2
 
-num_samples_per_cocoa_bean = 20
+num_samples_per_cocoa_bean = 1
 epsilon_bound = 10
-ma_size = 10
+
+lot_size = 50
+np.random.seed(0)
+num_lot_reps = 1000
+
+num_samples_train = 143
+num_samples_test = 68
 
 full_cocoa_paths = {'train': {0: "L1F60R290324C070524TRAINFULL.mat",
                               1: "L2F66R310324C070524TRAINFULL.mat",
@@ -51,8 +57,16 @@ wavelengths = BANDA[0, :]
 conveyor_belt = BANDA[1:]
 conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='auto', random_state=0)
 
+
 # Append new data to dataset
 def append_to_dataset(dataset, new_data):
+    current_shape = dataset.shape
+    new_shape = (current_shape[0] + new_data.shape[0], current_shape[1], current_shape[2])
+    dataset.resize(new_shape)
+    dataset[current_shape[0]:] = new_data
+
+
+def append_to_label_dataset(dataset, new_data):
     current_shape = dataset.shape
     new_shape = (current_shape[0] + new_data.shape[0], current_shape[1])
     dataset.resize(new_shape)
@@ -67,11 +81,10 @@ def moving_average(a, n=3):
 
 for subset_name, cocoa_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
-    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp.h5'), 'w') as d:
-        dataset = d.create_dataset('spec', shape=(0, len(white_ref) - ma_size + 1),
-                                   maxshape=(None, len(white_ref) - ma_size + 1),
-                                   chunks=(256, len(white_ref) - ma_size + 1),
-                                   dtype=np.float32)
+    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp_oneCenter_squarelots.h5'), 'w') as d:
+        dataset = d.create_dataset('spec', shape=(0, lot_size, len(white_ref)),
+                                   maxshape=(None, lot_size, len(white_ref)),
+                                   chunks=(256, lot_size, len(white_ref)), dtype=np.float32)
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
 
         for label, cocoa_filename in cocoa_filenames.items():
@@ -113,28 +126,38 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
                     cocoa_bean_samples = cocoa_lot[selected_indices]
                     cocoa_bean_list.append(cocoa_bean_samples)
                 else:
-                    print('Invalid cocoa bean range', c_idx, 'This cocoa bean will be skipped')
+                    # print('Invalid cocoa bean range', c_idx, 'This cocoa bean will be skipped')
+                    pass
+
+            print('The number of valid cocoa beans is:', len(cocoa_bean_list))
 
             # append to dataset
 
             cocoa_final_list = np.concatenate(cocoa_bean_list, axis=0)
             cocoa_final_list = (cocoa_final_list - black_ref) / (white_ref - black_ref)
 
-            # moving average
-
-            wavelengths_ma = moving_average(wavelengths[None], n=ma_size).squeeze()
-            cocoa_final_list_ma = moving_average(cocoa_final_list, n=ma_size)
-
-            # normalize
-
-            # cocoa_min = cocoa_final_list.min(axis=1)[:, None]
-            # cocoa_max = cocoa_final_list.max(axis=1)[:, None]
-            # cocoa_final_list_norm = (cocoa_final_list - cocoa_min) / (cocoa_max - cocoa_min)
-
             # append to dataset
 
-            num_samples = 1500 if subset_name == 'train' else 500
-            final_indices = np.linspace(0, cocoa_final_list_ma.shape[0], num_samples, dtype=np.uint8)
+            if num_samples_train > 0 or num_samples_test > 0:
+                num_samples = num_samples_train if subset_name == 'train' else num_samples_test
+            else:
+                num_samples = cocoa_final_list.shape[0]
 
-            append_to_dataset(dataset, cocoa_final_list_ma[final_indices])
-            append_to_dataset(labelset, np.ones((num_samples, 1), dtype=np.uint8) * label)
+            final_indices = np.linspace(0, cocoa_final_list.shape[0] - 1, num_samples, dtype=np.uint8)
+            cocoa_final_list = cocoa_final_list[final_indices]
+
+            # generate lots
+
+            cocoa_lot_final_list = []
+
+            for i in range(num_lot_reps):
+                rand_indices = np.random.permutation(cocoa_final_list.shape[0])
+                cocoa_lot_final_list.append(cocoa_final_list[rand_indices[:lot_size]])
+
+            cocoa_lot_final_list = np.stack(cocoa_lot_final_list, axis=0)
+
+            # append_to_dataset(dataset, cocoa_final_list[final_indices])
+            append_to_dataset(dataset, cocoa_lot_final_list)
+            append_to_label_dataset(labelset, np.ones((num_lot_reps, 1), dtype=np.uint8) * label)
+
+            print('The final number of samples is:', num_lot_reps)

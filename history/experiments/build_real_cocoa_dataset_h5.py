@@ -11,7 +11,7 @@ base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
 banda_dir = os.path.join(base_dir, "Anexos")
 bw_dir = os.path.join(base_dir, "bw_ref")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
-results_dir = os.path.join("../results")
+results_dir = os.path.join("../../results")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)

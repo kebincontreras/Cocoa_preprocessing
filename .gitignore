@@ -1,10 +1,14 @@
 
 .idea/
 
-results_old/
+history/results_old/
 
 results/
 
 *.mat
 
 __pycache__/
+
+history/data_analysis/results_old/
+
+history/data_analysis/samples/results_old/

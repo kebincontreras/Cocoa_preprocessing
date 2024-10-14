@@ -11,7 +11,7 @@ base_dir = "/home/enmartz/Jobs/cacao/HDSP-dataset/FLAME"
 banda_dir = os.path.join(base_dir, "Anexos")
 bw_dir = os.path.join(base_dir, "bw_ref")
 lote_dir = os.path.join(base_dir, "Optical_lab_spectral")
-results_dir = os.path.join("../results")
+results_dir = os.path.join("../../results")
 
 # Asegurar la creación de los directorios si no existen
 os.makedirs(results_dir, exist_ok=True)
@@ -23,7 +23,6 @@ num_samples_per_cocoa_bean = 1
 epsilon_bound = 10
 
 lot_size = 50
-np.random.seed(0)
 num_lot_reps = 1000
 
 num_samples_train = 143
@@ -61,13 +60,6 @@ conveyor_cluster_centers, _, _ = k_means(conveyor_belt, n_clusters=5, n_init='au
 # Append new data to dataset
 def append_to_dataset(dataset, new_data):
     current_shape = dataset.shape
-    new_shape = (current_shape[0] + new_data.shape[0], current_shape[1], current_shape[2])
-    dataset.resize(new_shape)
-    dataset[current_shape[0]:] = new_data
-
-
-def append_to_label_dataset(dataset, new_data):
-    current_shape = dataset.shape
     new_shape = (current_shape[0] + new_data.shape[0], current_shape[1])
     dataset.resize(new_shape)
     dataset[current_shape[0]:] = new_data
@@ -81,10 +73,10 @@ def moving_average(a, n=3):
 
 for subset_name, cocoa_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
-    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp_oneCenter_squarelots.h5'), 'w') as d:
-        dataset = d.create_dataset('spec', shape=(0, lot_size, len(white_ref)),
-                                   maxshape=(None, lot_size, len(white_ref)),
-                                   chunks=(256, lot_size, len(white_ref)), dtype=np.float32)
+    with h5py.File(os.path.join(results_dir, f'{subset_name}_real_cocoa_hdsp_oneCenter_lots.h5'), 'w') as d:
+        dataset = d.create_dataset('spec', shape=(0, lot_size * len(white_ref)),
+                                   maxshape=(None, lot_size * len(white_ref)),
+                                   chunks=(256, lot_size * len(white_ref)), dtype=np.float32)
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
 
         for label, cocoa_filename in cocoa_filenames.items():
@@ -152,12 +144,12 @@ for subset_name, cocoa_filenames in full_cocoa_paths.items():
 
             for i in range(num_lot_reps):
                 rand_indices = np.random.permutation(cocoa_final_list.shape[0])
-                cocoa_lot_final_list.append(cocoa_final_list[rand_indices[:lot_size]])
+                cocoa_lot_final_list.append(cocoa_final_list[rand_indices[:lot_size]].flatten())
 
             cocoa_lot_final_list = np.stack(cocoa_lot_final_list, axis=0)
 
             # append_to_dataset(dataset, cocoa_final_list[final_indices])
             append_to_dataset(dataset, cocoa_lot_final_list)
-            append_to_label_dataset(labelset, np.ones((num_lot_reps, 1), dtype=np.uint8) * label)
+            append_to_dataset(labelset, np.ones((num_lot_reps, 1), dtype=np.uint8) * label)
 
             print('The final number of samples is:', num_lot_reps)

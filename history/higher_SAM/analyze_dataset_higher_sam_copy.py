@@ -22,8 +22,7 @@ def compute_sam(a, b):
 # set main paths
 
 base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
-# band_dir = os.path.join(base_dir, "BANDATRANSPORTADORAC090524.mat")
-out_dir = os.path.join("built_datasets")
+out_dir = os.path.join("../../built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
 # set variables
@@ -44,39 +43,39 @@ debug_pca = True
 # set path to cocoa dataset
 
 full_cocoa_paths = {'train': {
-    0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
-        "B": "blanco.mat",
-        "N": "negro.mat",
-        "E": "Entrega 1"},
+    # 0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
+    #     "B": "blanco.mat",
+    #     "N": "negro.mat",
+    #     "E": "Entrega 1"},
     # 1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
     #     "B": "blanco.mat",
     #     "N": "negro.mat",
     #     "E": "Entrega 1"},
-    # 2: {"L": "L7F73H144E270624C240724VISTRAIFULL.mat",
-    #     "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
-    #     "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
-    #     "E": "Entrega 2"},
-    # 3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
+    0: {"L": "L7F73H144E270624C240724VISTRAIFULL.mat",
+        "B": "B7F73H144E270624C240724VISTRAIFULL.mat",
+        "N": "N7F73H144E270624C240724VISTRAIFULL.mat",
+        "E": "Entrega 2"},
+    # 2: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
     #     "B": "blanco.mat",
     #     "N": "negro.mat",
     #     "E": "Entrega 1"},
-    # 4: {"L": "L6F85H110E270624C240724VISTRAIFULL.mat",
-    #     "B": "B6F85H110E270624C240724VISTRAIFULL.mat",
-    #     "N": "N6F85H110E270624C240724VISTRAIFULL.mat",
-    #     "E": "Entrega 2"},
-    # 5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
+    1: {"L": "L6F85H110E270624C240724VISTRAIFULL.mat",
+        "B": "B6F85H110E270624C240724VISTRAIFULL.mat",
+        "N": "N6F85H110E270624C240724VISTRAIFULL.mat",
+        "E": "Entrega 2"},
+    # 3: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
     #     "B": "blanco.mat",
     #     "N": "negro.mat",
     #     "E": "Entrega 1"},
-    # 6: {"L": "L8F94H216E270624C240724VISTRAIFULL.mat",
-    #     "B": "B8F94H216E270624C240724VISTRAIFULL.mat",
-    #     "N": "N8F94H216E270624C240724VISTRAIFULL.mat",
-    #     "E": "Entrega 2"},
-    # 0: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
+    2: {"L": "L8F94H216E270624C240724VISTRAIFULL.mat",
+        "B": "B8F94H216E270624C240724VISTRAIFULL.mat",
+        "N": "N8F94H216E270624C240724VISTRAIFULL.mat",
+        "E": "Entrega 2"},
+    # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
     #     "B": "blanco.mat",
     #     "N": "negro.mat",
     #     "E": "Entrega 1"},
-    1: {"L": "L9F96H252E270624C240724VISTRAIFULL.mat",
+    3: {"L": "L9F96H252E270624C240724VISTRAIFULL.mat",
         "B": "B9F96H252E270624C240724VISTRAIFULL.mat",
         "N": "N9F96H252E270624C240724VISTRAIFULL.mat",
         "E": "Entrega 2"},
@@ -235,10 +234,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         # get cocoa lot with reflectance
 
         selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-        # max
-        selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
-        # mean_selected_cocoa_reflectance = selected_cocoa_reflectance.mean(axis=0)
-        # std_selected_cocoa_reflectance = selected_cocoa_reflectance.std(axis=0)
+        mean_selected_cocoa_reflectance = selected_cocoa_reflectance.mean(axis=0)
+        std_selected_cocoa_reflectance = selected_cocoa_reflectance.std(axis=0)
 
         if debug:
             plt.figure(figsize=(8, 8))
@@ -287,12 +284,20 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
     # compute mean and std of dataset and plot
 
-    entrega_numbers = [1, 2]
-    ferm_levels = [60, 96]
-    colors = ['b', 'g']
+    entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
+    ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
+    colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
+
+    entrega_numbers = [1, 1, 1, 1]
+    ferm_levels = [60, 66, 84, 92]
+    colors = ['r', 'g', 'y', 'c']
+
+    entrega_numbers = [2, 2, 2, 2]
+    ferm_levels = [73, 85, 94, 96]
+    colors = ['b', 'm', 'k', 'orange']
 
     if debug_pca:
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(6, 5))
         for i in range(len(cocoa_bean_dataset)):
             X_class = cocoa_bean_dataset[i]
             mean = X_class.mean(axis=0)
@@ -300,6 +305,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
+        plt.ylim([0, 2])
         plt.legend()
         plt.xlabel('Wavelength [nm]')
         plt.ylabel('Reflectance')
@@ -318,12 +324,14 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     X_pca = pca.fit_transform(full_cocoa_bean_dataset)
 
     if debug_pca:
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(6, 5))
         for i in range(len(cocoa_bean_dataset)):
             X_class = X_pca[full_label_dataset.squeeze() == i]
             plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
+        plt.xlim([-10, 10])
+        plt.xlim([-5, 5])
         plt.title('Cocoa mean PCA')
         plt.grid()
         plt.legend()
@@ -332,7 +340,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
     # plot cocoa bean batch mean dataset
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(6, 5))
     for i in range(len(cocoa_bean_batch_mean_dataset)):
         X_class = cocoa_bean_batch_mean_dataset[i]
         mean = X_class.mean(axis=0)
@@ -340,6 +348,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
         plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
+    plt.ylim([0, 2])
     plt.legend()
     plt.xlabel('Wavelength [nm]')
     plt.ylabel('Reflectance')
@@ -357,12 +366,14 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(full_cocoa_bean_batch_mean_dataset)
 
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(6, 5))
     for i in range(len(cocoa_bean_batch_mean_dataset)):
         X_class = X_pca[full_label_batch_mean_dataset.squeeze() == i]
         plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
                     label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
+    plt.xlim([-10, 10])
+    plt.xlim([-5, 5])
     plt.title('Cocoa mean PCA')
     plt.grid()
 
