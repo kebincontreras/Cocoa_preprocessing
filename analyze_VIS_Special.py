@@ -22,7 +22,7 @@ def compute_sam(a, b):
 
 # set main paths
 
-base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
+base_dir = r"C:\Users\USUARIO\Documents\UIS_Cacao\Base_Datos_Cacao\ALL_VIS_special_1"
 out_dir = os.path.join("built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
@@ -80,10 +80,11 @@ full_cocoa_paths = {
                   "B": "B4F96H252E270624C240724VISTRAIFULL.mat",
                   "N": "N4F96H252E270624C240724VISTRAIFULL.mat",
                   "E": "Entrega 2"},
-              8: {"L": "LOTE4EXP50G_010824_VIS.mat",
-                  "B": "BLANCO_EXP50G_010824_VIS.mat",
-                  "N": "NEGRO_EXP50G_010824_VIS.mat",
-                  "E": "Entrega S"},
+              8: {"L": "GRANOS_L3_VIS.mat",
+                 "B": "BLANCO_EXP50G_010824_VIS.mat",
+                 "N": "NEGRO_EXP50G_010824_VIS.mat",
+                 "E": "Entrega S camila"},
+
               9: {"L": "LOTEMIXEXP50G_010824_VIS.mat",
                   "B": "BLANCO_EXP50G_010824_VIS.mat",
                   "N": "NEGRO_EXP50G_010824_VIS.mat",
@@ -125,10 +126,12 @@ full_cocoa_paths = {
                  "B": "B4F96H252E270624C250724VISTESTFULL.mat",
                  "N": "N4F96H252E270624C250724VISTESTFULL.mat",
                  "E": "Entrega 2"},
-             8: {"L": "LOTE4EXP50G_010824_VIS.mat",
+             8: {"L": "GRANOS_L3_VIS.mat",
                  "B": "BLANCO_EXP50G_010824_VIS.mat",
                  "N": "NEGRO_EXP50G_010824_VIS.mat",
-                 "E": "Entrega S"},
+                 "E": "Entrega S camila"},
+
+
              9: {"L": "LOTEMIXEXP50G_010824_VIS.mat",
                  "B": "BLANCO_EXP50G_010824_VIS.mat",
                  "N": "NEGRO_EXP50G_010824_VIS.mat",
@@ -312,7 +315,7 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     # compute mean and std of dataset and plot
 
     entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2, 'mix', 'mix']
-    ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96, 96, 'mix']
+    ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96, 'camila', 'mix']
     colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange', 'purple', 'brown']
     markers = ['o', 'o', 's', 'P', 'P', 'X', 'X', 'X', '^', '^']
     line_styles = ['solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed']
