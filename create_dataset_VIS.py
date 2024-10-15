@@ -19,6 +19,11 @@ def compute_sam(a, b):
     b_norm = np.linalg.norm(b, axis=-1, keepdims=True)
     return np.arccos(np.clip(np.matmul(a, b.T) / np.matmul(a_norm, b_norm.T), a_min=-1.0, a_max=1.0))
 
+def append_to_dataset(dataset, new_data):
+    current_shape = dataset.shape
+    new_shape = (current_shape[0] + new_data.shape[0], current_shape[1])
+    dataset.resize(new_shape)
+    dataset[current_shape[0]:] = new_data
 
 # set main paths
 
@@ -136,163 +141,175 @@ wavelengths = next(
 
 efficiency_threshold = (efficiency_range[0] <= wavelengths) & (wavelengths <= efficiency_range[1])
 wavelengths = wavelengths[efficiency_threshold]
+num_bands = efficiency_threshold.sum()
 
 # load and build dataset
 
 for subset_name, lot_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
-    cocoa_bean_dataset = []
-    label_dataset = []
+    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect.h5'), 'w') as d:
+        dataset = d.create_dataset('spec', shape=(0, num_bands), maxshape=(None, num_bands),
+                                   chunks=(256, num_bands), dtype=np.float32)
+        labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
 
-    cocoa_bean_batch_mean_dataset = []
-    label_batch_mean_dataset = []
+        cocoa_bean_dataset = []
+        label_dataset = []
 
-    for label, lot_filename in lot_filenames.items():
-        print(f"Processing {lot_filename['E']} - {lot_filename['L']}")
+        cocoa_bean_batch_mean_dataset = []
+        label_batch_mean_dataset = []
 
-        white = next(
-            v for k, v in loadmat(os.path.join(base_dir, lot_filename['B'])).items() if not k.startswith('__'))
-        black = next(
-            v for k, v in loadmat(os.path.join(base_dir, lot_filename['N'])).items() if not k.startswith('__'))
-        lot = next(
-            v for k, v in loadmat(os.path.join(base_dir, lot_filename['L'])).items() if not k.startswith('__'))[1:]
+        for label, lot_filename in lot_filenames.items():
+            print(f"Processing {lot_filename['E']} - {lot_filename['L']}")
 
-        # apply efficiency threshold
+            white = next(
+                v for k, v in loadmat(os.path.join(base_dir, lot_filename['B'])).items() if not k.startswith('__'))
+            black = next(
+                v for k, v in loadmat(os.path.join(base_dir, lot_filename['N'])).items() if not k.startswith('__'))
+            lot = next(
+                v for k, v in loadmat(os.path.join(base_dir, lot_filename['L'])).items() if not k.startswith('__'))[1:]
 
-        white = white[:, efficiency_threshold.squeeze()]
-        black = black[:, efficiency_threshold]
-        lot = lot[:, efficiency_threshold]
-        lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66H144R310324C070524VISTESTFULL.mat' else lot
+            # apply efficiency threshold
 
-        # if '1' in lot_filename['E']:
-        #     lot = lot + black.mean(axis=0)[None, ...]
+            white = white[:, efficiency_threshold.squeeze()]
+            black = black[:, efficiency_threshold]
+            lot = lot[:, efficiency_threshold]
+            lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66H144R310324C070524VISTESTFULL.mat' else lot
 
-        if debug:
-            plt.figure(figsize=(8, 8))
-            plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
+            # if '1' in lot_filename['E']:
+            #     lot = lot + black.mean(axis=0)[None, ...]
 
-            plt.subplot(3, 1, 1)
-            plt.plot(wavelengths, white[::white.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('White')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+            if debug:
+                plt.figure(figsize=(8, 8))
+                plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
 
-            plt.subplot(3, 1, 2)
-            plt.plot(wavelengths, black[::black.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('Black')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+                plt.subplot(3, 1, 1)
+                plt.plot(wavelengths, white[::white.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('White')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-            plt.subplot(3, 1, 3)
-            plt.plot(wavelengths, lot[::lot.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('Lot')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+                plt.subplot(3, 1, 2)
+                plt.plot(wavelengths, black[::black.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('Black')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-            plt.tight_layout()
-            plt.show()
+                plt.subplot(3, 1, 3)
+                plt.plot(wavelengths, lot[::lot.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('Lot')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-        # process white and black
+                plt.tight_layout()
+                plt.show()
 
-        white = white.mean(axis=0)[None, ...]
-        black = black.mean(axis=0)[None, ...]
-        if white.max() < 50000.0:
-            white = white * entrega1_white_scaling
+            # process white and black
 
-        # get conveyor belt signatures
+            white = white.mean(axis=0)[None, ...]
+            black = black.mean(axis=0)[None, ...]
+            if white.max() < 50000.0:
+                white = white * entrega1_white_scaling
 
-        conveyor_belt = lot[:conveyor_belt_samples, :]
-        cc_distances = compute_sam(lot, conveyor_belt)
-        lot_distances = cc_distances.min(axis=-1)
-        sorted_indices = np.argsort(lot_distances)[::-1]  # from higher sam to lower
-        selected_indices = np.sort(sorted_indices[:max_num_samples])
-        selected_cocoa = lot[selected_indices, :]
+            # get conveyor belt signatures
 
-        if debug:
-            plt.figure(figsize=(8, 8))
-            plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
+            conveyor_belt = lot[:conveyor_belt_samples, :]
+            cc_distances = compute_sam(lot, conveyor_belt)
+            lot_distances = cc_distances.min(axis=-1)
+            sorted_indices = np.argsort(lot_distances)[::-1]  # from higher sam to lower
+            selected_indices = np.sort(sorted_indices[:max_num_samples])
+            selected_cocoa = lot[selected_indices, :]
 
-            plt.subplot(3, 1, 1)
-            plt.plot(wavelengths, conveyor_belt.T, alpha=0.5)
-            plt.title('Conveyor Belt')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+            if debug:
+                plt.figure(figsize=(8, 8))
+                plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
 
-            plt.subplot(3, 1, 2)
-            plt.plot(np.sort(lot_distances))
-            plt.axvline(x=lot_distances.shape[0] - max_num_samples, color='r', linestyle='--',
-                        label=f'Threshold for {max_num_samples} samples')
-            plt.title('Sorted Lot Distances')
-            plt.xlabel('Lot Sample')
-            plt.ylabel('SAM')
-            plt.grid()
-            plt.legend()
+                plt.subplot(3, 1, 1)
+                plt.plot(wavelengths, conveyor_belt.T, alpha=0.5)
+                plt.title('Conveyor Belt')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-            plt.subplot(3, 1, 3)
-            plt.plot(wavelengths, selected_cocoa[::selected_cocoa.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('Selected Cocoa')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+                plt.subplot(3, 1, 2)
+                plt.plot(np.sort(lot_distances))
+                plt.axvline(x=lot_distances.shape[0] - max_num_samples, color='r', linestyle='--',
+                            label=f'Threshold for {max_num_samples} samples')
+                plt.title('Sorted Lot Distances')
+                plt.xlabel('Lot Sample')
+                plt.ylabel('SAM')
+                plt.grid()
+                plt.legend()
 
-            plt.tight_layout()
-            plt.show()
+                plt.subplot(3, 1, 3)
+                plt.plot(wavelengths, selected_cocoa[::selected_cocoa.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('Selected Cocoa')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-        # get cocoa lot with reflectance
+                plt.tight_layout()
+                plt.show()
 
-        selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-        selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
-        # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
+            # get cocoa lot with reflectance
 
-        if debug:
-            plt.figure(figsize=(8, 8))
-            plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
+            selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
+            selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+            # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
 
-            plt.subplot(3, 1, 1)
-            plt.plot(wavelengths, white[::white.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('White')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+            if debug:
+                plt.figure(figsize=(8, 8))
+                plt.suptitle(lot_filename['E'] + ' - ' + lot_filename['L'])
 
-            plt.subplot(3, 1, 2)
-            plt.plot(wavelengths, black[::black.shape[0] // plot_num_samples + 1].T, alpha=0.5)
-            plt.title('Black')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Intensity')
-            plt.grid()
+                plt.subplot(3, 1, 1)
+                plt.plot(wavelengths, white[::white.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('White')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-            plt.subplot(3, 1, 3)
-            plt.plot(wavelengths,
-                     selected_cocoa_reflectance[::selected_cocoa_reflectance.shape[0] // plot_num_samples + 1].T,
-                     alpha=0.5)
-            plt.title('Selected Cocoa Reflectance')
-            plt.xlabel('Wavelength [nm]')
-            plt.ylabel('Reflectance')
-            plt.grid()
+                plt.subplot(3, 1, 2)
+                plt.plot(wavelengths, black[::black.shape[0] // plot_num_samples + 1].T, alpha=0.5)
+                plt.title('Black')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Intensity')
+                plt.grid()
 
-            plt.tight_layout()
-            plt.show()
+                plt.subplot(3, 1, 3)
+                plt.plot(wavelengths,
+                         selected_cocoa_reflectance[::selected_cocoa_reflectance.shape[0] // plot_num_samples + 1].T,
+                         alpha=0.5)
+                plt.title('Selected Cocoa Reflectance')
+                plt.xlabel('Wavelength [nm]')
+                plt.ylabel('Reflectance')
+                plt.grid()
 
-        # append to dataset
+                plt.tight_layout()
+                plt.show()
 
-        cocoa_bean_dataset.append(selected_cocoa_reflectance)
-        label_dataset.append(np.ones(selected_cocoa_reflectance.shape[0], dtype=int) * label)
+            # append to dataset
 
-        # shuffle and batch mean
-        cocoa_bean_batch_mean_aux = []
-        for i in range(cocoa_batch_samples):
-            random_indices = np.random.choice(selected_cocoa_reflectance.shape[0], cocoa_batch_size, replace=False)
-            cocoa_bean_batch_mean_aux.append(selected_cocoa_reflectance[random_indices].mean(axis=0))
+            cocoa_bean_dataset.append(selected_cocoa_reflectance)
+            label_dataset.append(np.ones(selected_cocoa_reflectance.shape[0], dtype=int) * label)
 
-        cocoa_bean_batch_mean_aux = np.stack(cocoa_bean_batch_mean_aux, axis=0)
-        cocoa_bean_batch_mean_dataset.append(cocoa_bean_batch_mean_aux)
-        label_batch_mean_dataset.append(np.ones(cocoa_bean_batch_mean_aux.shape[0], dtype=int) * label)
+            # shuffle and batch mean
+            cocoa_bean_batch_mean_aux = []
+            for i in range(cocoa_batch_samples):
+                random_indices = np.random.choice(selected_cocoa_reflectance.shape[0], cocoa_batch_size, replace=False)
+                cocoa_bean_batch_mean_aux.append(selected_cocoa_reflectance[random_indices].mean(axis=0))
+
+            cocoa_bean_batch_mean_aux = np.stack(cocoa_bean_batch_mean_aux, axis=0)
+            cocoa_bean_batch_mean_dataset.append(cocoa_bean_batch_mean_aux)
+            label_bean_batch_aux = np.ones(cocoa_bean_batch_mean_aux.shape[0], dtype=int) * label
+            label_batch_mean_dataset.append(label_bean_batch_aux)
+
+            # append to h5 dataset
+
+            append_to_dataset(dataset, cocoa_bean_batch_mean_aux)
+            append_to_dataset(labelset, label_bean_batch_aux[..., None])
 
     # compute mean and std of dataset and plot
 

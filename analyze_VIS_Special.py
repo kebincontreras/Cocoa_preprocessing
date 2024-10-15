@@ -41,13 +41,6 @@ plot_num_samples = 500
 debug = False
 debug_pca = True
 
-# set variables for cocoa dataset
-
-entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
-ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
-colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
-markers = ['o', 'o', 's', 'P', 'P', 'X', 'X', 'X']
-
 # set path to cocoa dataset
 
 full_cocoa_paths = {
@@ -87,6 +80,14 @@ full_cocoa_paths = {
                   "B": "B4F96H252E270624C240724VISTRAIFULL.mat",
                   "N": "N4F96H252E270624C240724VISTRAIFULL.mat",
                   "E": "Entrega 2"},
+              8: {"L": "LOTE4EXP50G_010824_VIS.mat",
+                  "B": "BLANCO_EXP50G_010824_VIS.mat",
+                  "N": "NEGRO_EXP50G_010824_VIS.mat",
+                  "E": "Entrega S"},
+              9: {"L": "LOTEMIXEXP50G_010824_VIS.mat",
+                  "B": "BLANCO_EXP50G_010824_VIS.mat",
+                  "N": "NEGRO_EXP50G_010824_VIS.mat",
+                  "E": "Entrega S"},
               },
     'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
                  "B": "blanco.mat",
@@ -124,6 +125,14 @@ full_cocoa_paths = {
                  "B": "B4F96H252E270624C250724VISTESTFULL.mat",
                  "N": "N4F96H252E270624C250724VISTESTFULL.mat",
                  "E": "Entrega 2"},
+             8: {"L": "LOTE4EXP50G_010824_VIS.mat",
+                 "B": "BLANCO_EXP50G_010824_VIS.mat",
+                 "N": "NEGRO_EXP50G_010824_VIS.mat",
+                 "E": "Entrega S"},
+             9: {"L": "LOTEMIXEXP50G_010824_VIS.mat",
+                 "B": "BLANCO_EXP50G_010824_VIS.mat",
+                 "N": "NEGRO_EXP50G_010824_VIS.mat",
+                 "E": "Entrega S"},
              },
 }
 
@@ -205,12 +214,18 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
         # get conveyor belt signatures
 
-        conveyor_belt = lot[:conveyor_belt_samples, :]
-        cc_distances = compute_sam(lot, conveyor_belt)
-        lot_distances = cc_distances.min(axis=-1)
-        sorted_indices = np.argsort(lot_distances)[::-1]  # from higher sam to lower
-        selected_indices = np.sort(sorted_indices[:max_num_samples])
-        selected_cocoa = lot[selected_indices, :]
+        if 'S' in lot_filename['E']:
+            conveyor_belt = np.zeros_like(lot)
+            cc_distances = compute_sam(lot, conveyor_belt)
+            lot_distances = cc_distances.min(axis=-1)
+            selected_cocoa = lot
+        else:
+            conveyor_belt = lot[:conveyor_belt_samples, :]
+            cc_distances = compute_sam(lot, conveyor_belt)
+            lot_distances = cc_distances.min(axis=-1)
+            sorted_indices = np.argsort(lot_distances)[::-1]  # from higher sam to lower
+            selected_indices = np.sort(sorted_indices[:max_num_samples])
+            selected_cocoa = lot[selected_indices, :]
 
         if debug:
             plt.figure(figsize=(8, 8))
@@ -296,13 +311,20 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
     # compute mean and std of dataset and plot
 
+    entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2, 'mix', 'mix']
+    ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96, 96, 'mix']
+    colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange', 'purple', 'brown']
+    markers = ['o', 'o', 's', 'P', 'P', 'X', 'X', 'X', '^', '^']
+    line_styles = ['solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed']
+
     if debug_pca:
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(8, 6))
         for i in range(len(cocoa_bean_dataset)):
             X_class = cocoa_bean_dataset[i]
             mean = X_class.mean(axis=0)
             std = X_class.std(axis=0)
-            plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+            plt.plot(wavelengths, mean, color=colors[i], linestyle=line_styles[i],
+                     label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
             plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
         plt.legend()
@@ -319,24 +341,19 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     full_cocoa_bean_dataset = np.concatenate(cocoa_bean_dataset, axis=0)
     full_label_dataset = np.concatenate(label_dataset, axis=0)
 
-    from sklearn.preprocessing import StandardScaler
-
-    scaler = StandardScaler()
-    full_cocoa_bean_dataset = scaler.fit_transform(full_cocoa_bean_dataset)
-
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(full_cocoa_bean_dataset)
-    # explained_variance = pca.explained_variance_ratio_
+    explained_variance = pca.explained_variance_ratio_
 
     if debug_pca:
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(10, 5))
         for i in range(len(cocoa_bean_dataset)):
             X_class = X_pca[full_label_dataset.squeeze() == i]
             plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5, marker=markers[i],
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
-        # plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
-        # plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
+        plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
+        plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
 
         plt.title(f'Cocoa dataset PCA')
         plt.grid()
@@ -346,12 +363,13 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
     # plot cocoa bean batch mean dataset
 
-    plt.figure(figsize=(6, 5))
+    plt.figure(figsize=(8, 6))
     for i in range(len(cocoa_bean_batch_mean_dataset)):
         X_class = cocoa_bean_batch_mean_dataset[i]
         mean = X_class.mean(axis=0)
         std = X_class.std(axis=0)
-        plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+        plt.plot(wavelengths, mean, color=colors[i], linestyle=line_styles[i],
+                 label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
         plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
 
     plt.legend()
@@ -368,27 +386,21 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
     full_cocoa_bean_batch_mean_dataset = np.concatenate(cocoa_bean_batch_mean_dataset, axis=0)
     full_label_batch_mean_dataset = np.concatenate(label_batch_mean_dataset, axis=0)
 
-    from sklearn.preprocessing import StandardScaler
-
-    scaler = StandardScaler()
-    full_cocoa_bean_batch_mean_dataset = scaler.fit_transform(full_cocoa_bean_batch_mean_dataset)
-
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(full_cocoa_bean_batch_mean_dataset)
-    # explained_variance = pca.explained_variance_ratio_
+    explained_variance = pca.explained_variance_ratio_
 
-    if debug_pca:
-        plt.figure(figsize=(6, 5))
-        for i in range(len(cocoa_bean_dataset)):
-            X_class = X_pca[full_label_batch_mean_dataset.squeeze() == i]
-            plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5, marker=markers[i],
-                        label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+    plt.figure(figsize=(10, 5))
+    for i in range(len(cocoa_bean_batch_mean_dataset)):
+        X_class = X_pca[full_label_batch_mean_dataset.squeeze() == i]
+        plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5, marker=markers[i],
+                    label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
-        # plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
-        # plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
+    plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
+    plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
 
-        plt.title(f'Cocoa dataset PCA')
-        plt.grid()
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
+    plt.title('Cocoa mean PCA')
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
