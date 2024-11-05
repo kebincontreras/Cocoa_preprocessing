@@ -78,14 +78,15 @@ full_cocoa_paths = {
             "B": "B4F96H252E270624C180724NIRTRAIFULL.mat",
             "N": "N4F96H252E270624C180724NIRTRAIFULL.mat",
             "E": "Entrega 2"},
-        8: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
-            "B": "BLANCO_EXP50G_010824_NIR.mat",
-            "N": "NEGRO_EXP50G_010824_NIR.mat",
-            "E": "Entrega S"},
-        9: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
-            "B": "BLANCO_EXP50G_010824_NIR.mat",
-            "N": "NEGRO_EXP50G_010824_NIR.mat",
-            "E": "Entrega S"},
+        #8: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
+        #    "B": "BLANCO_EXP50G_010824_NIR.mat",
+        #    "N": "NEGRO_EXP50G_010824_NIR.mat",
+        #    "E": "Entrega S"},
+        #9: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
+        #    "B": "BLANCO_EXP50G_010824_NIR.mat",
+        #    "N": "NEGRO_EXP50G_010824_NIR.mat",
+        #    "E": "Entrega S"},
+    
     },
     'test': {
         0: {"L": "L1F60H096R290324C030724NIRTESTFULL.mat",
@@ -247,11 +248,13 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         # get cocoa lot with reflectance
 
         if 'S' in lot_filename['E']:
-            #selected_cocoa_reflectance = selected_cocoa / white
-            selected_cocoa_reflectance = np.log(1 / (np.clip((selected_cocoa / white), 1e-10, None)))
+            selected_cocoa_reflectance = selected_cocoa / white
+            #selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+            selected_cocoa_reflectance = np.log(1 / (np.clip(selected_cocoa_reflectance, 1e-10, None)))
         else:
-            #selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-            selected_cocoa_reflectance = np.log(1 / (np.clip((selected_cocoa - black) / (white - black), 1e-10, None)))
+            selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
+            #selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+            selected_cocoa_reflectance = np.log(1 / (np.clip(selected_cocoa_reflectance, 1e-10, None)))
             
 
             
