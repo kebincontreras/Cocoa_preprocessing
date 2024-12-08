@@ -27,17 +27,17 @@ def append_to_dataset(dataset, new_data):
 
 # set main paths
 
-base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_VIS"
+base_dir = "/home/enmartz/Jobs/cacao/Base_Datos_Cacao/ALL_NIR"
 out_dir = os.path.join("built_datasets")
 os.makedirs(out_dir, exist_ok=True)
 
 # set variables
 
-efficiency_range = [500, 850]  # nanometers
-entrega1_white_scaling = 21.0  # white / this
+efficiency_range = [1000, 2200]  # nanometers
+entrega1_white_scaling = 1.0  # white / this
 conveyor_belt_samples = 200  # for sam metric
 angle_error = 0.25  # angle error between conveyor belt and cocoa signatures
-max_num_samples = 1000  # selected samples from lot with higher sam
+max_num_samples = 500  # selected samples from lot with higher sam
 
 cocoa_batch_size = 50  # guillotine methodology
 cocoa_batch_samples = 1000  # number of batch samples
@@ -46,96 +46,79 @@ plot_num_samples = 500
 debug = False
 debug_pca = True
 
-# set variables for cocoa dataset
-
-entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
-ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
-colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
-markers = ['o', 'o', 's', 'P', 'P', 'X', 'X', 'X']
-
 # set path to cocoa dataset
 
 full_cocoa_paths = {
-    'train': {0: {"L": "L1F60H096R290324C070524VISTRAIFULL.mat",
-                  "B": "blanco.mat",
-                  "N": "negro.mat",
+    'train': {0: {"L": "L1F60H096R290324C030724NIRTRAIFULL.mat",
+                  "B": "B2F73H144E270624C100724NIRTRAIFULL.mat",
+                  "N": "N2F73H144E270624C100724NIRTRAIFULL.mat",
                   "E": "Entrega 1"},
-              1: {"L": "L2F66H144R310324C070524VISTRAIFULL.mat",
-                  "B": "blanco.mat",
-                  "N": "negro.mat",
+              1: {"L": "L2F66H144R310324C030724NIRTRAIFULL.mat",
+                  "B": "B2F73H144E270624C100724NIRTRAIFULL.mat",
+                  "N": "N2F73H144E270624C100724NIRTRAIFULL.mat",
                   "E": "Entrega 1"},
-              2: {"L": "L2F73H144E270624C240724VISTRAIFULL.mat",
-                  "B": "B2F73H144E270624C240724VISTRAIFULL.mat",
-                  "N": "N2F73H144E270624C240724VISTRAIFULL.mat",
+              2: {"L": "L2F73H144E270624C100724NIRTRAIFULL.mat",
+                  "B": "B2F73H144E270624C100724NIRTRAIFULL.mat",
+                  "N": "N2F73H144E270624C100724NIRTRAIFULL.mat",
                   "E": "Entrega 2"},
-              3: {"L": "L3F84H192R020424C090524VISTRAIFULL.mat",
-                  "B": "blanco.mat",
-                  "N": "negro.mat",
+              3: {"L": "L3F84H192R020424C020724NIRTRAIFULL.mat",
+                  "B": "B1F85H110E270624C100724NIRTRAIFULL.mat",
+                  "N": "N1F85H110E270624C100724NIRTRAIFULL.mat",
                   "E": "Entrega 1"},
-              4: {"L": "L1F85H110E270624C240724VISTRAIFULL.mat",
-                  "B": "B1F85H110E270624C240724VISTRAIFULL.mat",
-                  "N": "N1F85H110E270624C240724VISTRAIFULL.mat",
+              4: {"L": "L1F85H110E270624C100724NIRTRAIFULL.mat",
+                  "B": "B1F85H110E270624C100724NIRTRAIFULL.mat",
+                  "N": "N1F85H110E270624C100724NIRTRAIFULL.mat",
                   "E": "Entrega 2"},
-              5: {"L": "L4F92H264R130424C090524VISTRAIFULL.mat",
-                  "B": "blanco.mat",
-                  "N": "negro.mat",
+              5: {"L": "L4F92H264R130424C030724NIRTRAIFULL.mat",
+                  "B": "B3F94H216E270624C180724NIRTRAIFULL.mat",
+                  "N": "N3F94H216E270624C180724NIRTRAIFULL.mat",
                   "E": "Entrega 1"},
-              6: {"L": "L3F94H216E270624C240724VISTRAIFULL.mat",
-                  "B": "B3F94H216E270624C240724VISTRAIFULL.mat",
-                  "N": "N3F94H216E270624C240724VISTRAIFULL.mat",
+              6: {"L": "L3F94H216E270624C180724NIRTRAIFULL.mat",
+                  "B": "B3F94H216E270624C180724NIRTRAIFULL.mat",
+                  "N": "N3F94H216E270624C180724NIRTRAIFULL.mat",
                   "E": "Entrega 2"},
-              # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTRAIFULL.mat",
-              #     "B": "blanco.mat",
-              #     "N": "negro.mat",
-              #     "E": "Entrega 1"},
-              7: {"L": "L4F96H252E270624C240724VISTRAIFULL.mat",
-                  "B": "B4F96H252E270624C240724VISTRAIFULL.mat",
-                  "N": "N4F96H252E270624C240724VISTRAIFULL.mat",
-                  "E": "Entrega 2"},
-              },
-    'test': {0: {"L": "L1F60H096R290324C070524VISTESTFULL.mat",
-                 "B": "blanco.mat",
-                 "N": "negro.mat",
+              7: {"L": "L4F96H252E270624C180724NIRTRAIFULL.mat",
+                  "B": "B4F96H252E270624C180724NIRTRAIFULL.mat",
+                  "N": "N4F96H252E270624C180724NIRTRAIFULL.mat",
+                  "E": "Entrega 2"}},
+    'test': {0: {"L": "L1F60H096R290324C030724NIRTESTFULL.mat",
+                 "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
+                 "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 1"},
-             1: {"L": "L2F66H144R310324C070524VISTESTFULL.mat",
-                 "B": "blanco.mat",
-                 "N": "negro.mat",
+             1: {"L": "L2F66H144R310324C030724NIRTESTFULL.mat",
+                 "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
+                 "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 1"},
-             2: {"L": "L2F73H144E270624C250724VISTESTFULL.mat",
-                 "B": "B2F73H144E270624C250724VISTESTFULL.mat",
-                 "N": "N2F73H144E270624C250724VISTESTFULL.mat",
+             2: {"L": "L2F73H144E270624C180724NIRTESTFULL.mat",
+                 "B": "B2F73H144E270624C180724NIRTESTFULL.mat",
+                 "N": "N2F73H144E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 2"},
-             3: {"L": "L3F84H192R020424C090524VISTESTFULL.mat",
-                 "B": "blanco.mat",
-                 "N": "negro.mat",
+             3: {"L": "L3F84H192R020424C030724NIRTESTFULL.mat",
+                 "B": "B1F85H110E270624C180724NIRTESTFULL.mat",
+                 "N": "N1F85H110E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 1"},
-             4: {"L": "L1F85H110E270624C250724VISTESTFULL.mat",
-                 "B": "B1F85H110E270624C250724VISTESTFULL.mat",
-                 "N": "N1F85H110E270624C250724VISTESTFULL.mat",
+             4: {"L": "L1F85H110E270624C180724NIRTESTFULL.mat",
+                 "B": "B1F85H110E270624C180724NIRTESTFULL.mat",
+                 "N": "N1F85H110E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 2"},
-             5: {"L": "L4F92H264R130424C090524VISTESTFULL.mat",
-                 "B": "blanco.mat",
-                 "N": "negro.mat",
+             5: {"L": "L4F92H264R130424C030724NIRTESTFULL.mat",
+                 "B": "B3F94H216E270624C180724NIRTESTFULL.mat",
+                 "N": "N3F94H216E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 1"},
-             6: {"L": "L3F94H216E270624C250724VISTESTFULL.mat",
-                 "B": "B3F94H216E270624C250724VISTESTFULL.mat",
-                 "N": "N3F94H216E270624C250724VISTESTFULL.mat",
+             6: {"L": "L3F94H216E270624C180724NIRTESTFULL.mat",
+                 "B": "B3F94H216E270624C180724NIRTESTFULL.mat",
+                 "N": "N3F94H216E270624C180724NIRTESTFULL.mat",
                  "E": "Entrega 2"},
-             # 7: {"L": "L5F96HXXXRDDMMAAC090524VISTESTFULL.mat",
-             #     "B": "blanco.mat",
-             #     "N": "negro.mat",
-             #     "E": "Entrega 1"},
-             7: {"L": "L4F96H252E270624C250724VISTESTFULL.mat",
-                 "B": "B4F96H252E270624C250724VISTESTFULL.mat",
-                 "N": "N4F96H252E270624C250724VISTESTFULL.mat",
-                 "E": "Entrega 2"},
-             },
+             7: {"L": "L4F96H252E270624C180724NIRTESTFULL.mat",
+                 "B": "B4F96H252E270624C180724NIRTESTFULL.mat",
+                 "N": "N4F96H252E270624C180724NIRTESTFULL.mat",
+                 "E": "Entrega 2"}},
 }
 
 # load wavelengths
 
 wavelengths = next(
-    v for k, v in loadmat(os.path.join(base_dir, 'wavelengths_VIS.mat')).items() if not k.startswith('__')).squeeze()
+    v for k, v in loadmat(os.path.join(base_dir, 'wavelengths_NIR.mat')).items() if not k.startswith('__')).squeeze()
 
 # set threshold between 400 and 900 nm
 
@@ -148,7 +131,7 @@ num_bands = efficiency_threshold.sum()
 for subset_name, lot_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
-    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect_500.h5'), 'w') as d:
+    with h5py.File(os.path.join(out_dir, f'NIR_{subset_name}_cocoa_beans_500.h5'), 'w') as d:
         dataset = d.create_dataset('spec', shape=(0, num_bands), maxshape=(None, num_bands),
                                    chunks=(256, num_bands), dtype=np.float32)
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
@@ -174,10 +157,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             white = white[:, efficiency_threshold.squeeze()]
             black = black[:, efficiency_threshold]
             lot = lot[:, efficiency_threshold]
-            lot = np.delete(lot, 8719, axis=0) if lot_filename == 'L2F66H144R310324C070524VISTESTFULL.mat' else lot
 
-            # if '1' in lot_filename['E']:
-            #     lot = lot + black.mean(axis=0)[None, ...]
+            lot = lot + black.mean(axis=0)[None, ...]
 
             if debug:
                 plt.figure(figsize=(8, 8))
@@ -211,8 +192,6 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
             white = white.mean(axis=0)[None, ...]
             black = black.mean(axis=0)[None, ...]
-            if white.max() < 50000.0:
-                white = white * entrega1_white_scaling
 
             # get conveyor belt signatures
 
@@ -258,7 +237,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
             selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
             selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
-            # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
+            # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1,
+            #                                                                          keepdims=True)
 
             if debug:
                 plt.figure(figsize=(8, 8))
@@ -311,12 +291,56 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             append_to_dataset(dataset, cocoa_bean_batch_mean_aux)
             append_to_dataset(labelset, label_bean_batch_aux[..., None])
 
-    # compute mean and std of dataset and plot
+        # compute mean and std of dataset and plot
 
-    if debug_pca:
-        plt.figure(figsize=(6, 5))
-        for i in range(len(cocoa_bean_dataset)):
-            X_class = cocoa_bean_dataset[i]
+        entrega_numbers = [1, 1, 2, 1, 2, 1, 2, 2]
+        ferm_levels = [60, 66, 73, 84, 85, 92, 94, 96]
+        colors = ['r', 'g', 'b', 'y', 'm', 'c', 'k', 'orange']
+
+        if debug_pca:
+            plt.figure(figsize=(8, 6))
+            for i in range(len(cocoa_bean_dataset)):
+                X_class = cocoa_bean_dataset[i]
+                mean = X_class.mean(axis=0)
+                std = X_class.std(axis=0)
+                plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+                plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
+
+            plt.legend()
+            plt.xlabel('Wavelength [nm]')
+            plt.ylabel('Reflectance')
+            plt.title('Mean and std of Cocoa dataset by class')
+
+            plt.grid()
+            plt.tight_layout()
+            plt.show()
+
+        # compute PCA with X_mean using sklearn
+
+        full_cocoa_bean_dataset = np.concatenate(cocoa_bean_dataset, axis=0)
+        full_label_dataset = np.concatenate(label_dataset, axis=0)
+
+        pca = PCA(n_components=2)
+        X_pca = pca.fit_transform(full_cocoa_bean_dataset)
+
+        if debug_pca:
+            plt.figure(figsize=(10, 5))
+            for i in range(len(cocoa_bean_dataset)):
+                X_class = X_pca[full_label_dataset.squeeze() == i]
+                plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
+                            label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
+
+            plt.title('Cocoa mean PCA')
+            plt.grid()
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+
+        # plot cocoa bean batch mean dataset
+
+        plt.figure(figsize=(8, 6))
+        for i in range(len(cocoa_bean_batch_mean_dataset)):
+            X_class = cocoa_bean_batch_mean_dataset[i]
             mean = X_class.mean(axis=0)
             std = X_class.std(axis=0)
             plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
@@ -325,87 +349,29 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
         plt.legend()
         plt.xlabel('Wavelength [nm]')
         plt.ylabel('Reflectance')
-        plt.title('Mean and std of Cocoa dataset by class')
+        plt.title('Mean of Cocoa dataset Batch Mean by class')
 
         plt.grid()
         plt.tight_layout()
         plt.show()
 
-    # compute PCA with X_mean using sklearn
+        # compute PCA with X_mean using sklearn
 
-    full_cocoa_bean_dataset = np.concatenate(cocoa_bean_dataset, axis=0)
-    full_label_dataset = np.concatenate(label_dataset, axis=0)
+        full_cocoa_bean_batch_mean_dataset = np.concatenate(cocoa_bean_batch_mean_dataset, axis=0)
+        full_label_batch_mean_dataset = np.concatenate(label_batch_mean_dataset, axis=0)
 
-    from sklearn.preprocessing import StandardScaler
+        pca = PCA(n_components=2)
+        X_pca = pca.fit_transform(full_cocoa_bean_batch_mean_dataset)
 
-    scaler = StandardScaler()
-    full_cocoa_bean_dataset = scaler.fit_transform(full_cocoa_bean_dataset)
-
-    pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(full_cocoa_bean_dataset)
-    # explained_variance = pca.explained_variance_ratio_
-
-    if debug_pca:
-        plt.figure(figsize=(6, 5))
-        for i in range(len(cocoa_bean_dataset)):
-            X_class = X_pca[full_label_dataset.squeeze() == i]
-            plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5, marker=markers[i],
-                        label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-
-        # plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
-        # plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
-
-        plt.title(f'Cocoa dataset PCA')
-        plt.grid()
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
-
-    # plot cocoa bean batch mean dataset
-
-    plt.figure(figsize=(6, 5))
-    for i in range(len(cocoa_bean_batch_mean_dataset)):
-        X_class = cocoa_bean_batch_mean_dataset[i]
-        mean = X_class.mean(axis=0)
-        std = X_class.std(axis=0)
-        plt.plot(wavelengths, mean, color=colors[i], label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
-        plt.fill_between(wavelengths, mean - std, mean + std, alpha=0.2, color=colors[i], linewidth=0.0)
-
-    plt.legend()
-    plt.xlabel('Wavelength [nm]')
-    plt.ylabel('Reflectance')
-    plt.title('Mean of Cocoa dataset Batch Mean by class')
-
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
-
-    # compute PCA with X_mean using sklearn
-
-    full_cocoa_bean_batch_mean_dataset = np.concatenate(cocoa_bean_batch_mean_dataset, axis=0)
-    full_label_batch_mean_dataset = np.concatenate(label_batch_mean_dataset, axis=0)
-
-    from sklearn.preprocessing import StandardScaler
-
-    scaler = StandardScaler()
-    full_cocoa_bean_batch_mean_dataset = scaler.fit_transform(full_cocoa_bean_batch_mean_dataset)
-
-    pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(full_cocoa_bean_batch_mean_dataset)
-    # explained_variance = pca.explained_variance_ratio_
-
-    if debug_pca:
-        plt.figure(figsize=(6, 5))
-        for i in range(len(cocoa_bean_dataset)):
+        plt.figure(figsize=(10, 5))
+        for i in range(len(cocoa_bean_batch_mean_dataset)):
             X_class = X_pca[full_label_batch_mean_dataset.squeeze() == i]
-            plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5, marker=markers[i],
+            plt.scatter(X_class[:, 0], X_class[:, 1], color=colors[i], alpha=0.5,
                         label=f'E{entrega_numbers[i]}-F{ferm_levels[i]}')
 
-        # plt.xlabel('Component 1: {:.2f}%'.format(explained_variance[0] * 100))
-        # plt.ylabel('Component 2: {:.2f}%'.format(explained_variance[1] * 100))
-
-        plt.title(f'Cocoa dataset PCA')
+        plt.title('Cocoa mean PCA')
         plt.grid()
+
         plt.legend()
         plt.tight_layout()
         plt.show()

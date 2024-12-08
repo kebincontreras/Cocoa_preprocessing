@@ -11,6 +11,36 @@ from datetime import datetime
 
 # functions
 
+def msc(input_data):
+    """
+        :msc: Scatter Correction technique performed with mean of the sample data as the reference.
+        :param input_data: Array of spectral data
+        :type input_data: DataFrame
+        :returns: data_msc (ndarray): Scatter corrected spectra data
+    """
+    eps = np.finfo(np.float32).eps
+    input_data = np.array(input_data, dtype=np.float64)
+    ref = []
+    sampleCount = int(len(input_data))
+
+    # mean centre correction
+    for i in range(input_data.shape[0]):
+        input_data[i, :] -= input_data[i, :].mean()
+
+    # Get the reference spectrum. If not given, estimate it from the mean
+    # Define a new array and populate it with the corrected data
+    data_msc = np.zeros_like(input_data)
+    for i in range(input_data.shape[0]):
+        for j in range(0, sampleCount, 10):
+            ref.append(np.mean(input_data[j:j + 10], axis=0))
+            # Run regression
+            fit = np.polyfit(ref[i], input_data[i, :], 1, full=True)
+            # Apply correction
+            data_msc[i, :] = (input_data[i, :] - fit[0][1]) / fit[0][0]
+
+    return data_msc
+
+
 def compute_sam(a, b):
     assert a.ndim == 2, "a must have two dimensions, if you only have one, please add an new dimension in the first place"
     assert b.ndim == 2, "b must have two dimensions, if you only have one, please add an new dimension in the first place"
@@ -19,11 +49,13 @@ def compute_sam(a, b):
     b_norm = np.linalg.norm(b, axis=-1, keepdims=True)
     return np.arccos(np.clip(np.matmul(a, b.T) / np.matmul(a_norm, b_norm.T), a_min=-1.0, a_max=1.0))
 
+
 def append_to_dataset(dataset, new_data):
     current_shape = dataset.shape
     new_shape = (current_shape[0] + new_data.shape[0], current_shape[1])
     dataset.resize(new_shape)
     dataset[current_shape[0]:] = new_data
+
 
 # set main paths
 
@@ -148,7 +180,7 @@ num_bands = efficiency_threshold.sum()
 for subset_name, lot_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
-    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect_500.h5'), 'w') as d:
+    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect_abs.h5'), 'w') as d:
         dataset = d.create_dataset('spec', shape=(0, num_bands), maxshape=(None, num_bands),
                                    chunks=(256, num_bands), dtype=np.float32)
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
@@ -257,8 +289,16 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             # get cocoa lot with reflectance
 
             selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-            selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
-            # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
+            selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1,
+                                                                                                     keepdims=True)
+
+            # # absorbance
+            # selected_cocoa_reflectance[selected_cocoa_reflectance <= 0.0] = 1e-3
+            # selected_cocoa_reflectance = -np.log(selected_cocoa_reflectance)
+
+            # MSC
+
+            selected_cocoa_reflectance = msc(selected_cocoa_reflectance)
 
             if debug:
                 plt.figure(figsize=(8, 8))
@@ -310,6 +350,8 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
 
             append_to_dataset(dataset, cocoa_bean_batch_mean_aux)
             append_to_dataset(labelset, label_bean_batch_aux[..., None])
+
+            # raise ValueError
 
     # compute mean and std of dataset and plot
 

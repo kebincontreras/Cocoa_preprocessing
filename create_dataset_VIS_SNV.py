@@ -148,7 +148,7 @@ num_bands = efficiency_threshold.sum()
 for subset_name, lot_filenames in full_cocoa_paths.items():
     print(f"Processing {subset_name} subset")
 
-    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect_500.h5'), 'w') as d:
+    with h5py.File(os.path.join(out_dir, f'{subset_name}_cocoa_beans_norm_reflect_SNV.h5'), 'w') as d:
         dataset = d.create_dataset('spec', shape=(0, num_bands), maxshape=(None, num_bands),
                                    chunks=(256, num_bands), dtype=np.float32)
         labelset = d.create_dataset('label', (0, 1), maxshape=(None, 1), chunks=(256, 1), dtype=np.uint8)
@@ -257,8 +257,12 @@ for subset_name, lot_filenames in full_cocoa_paths.items():
             # get cocoa lot with reflectance
 
             selected_cocoa_reflectance = (selected_cocoa - black) / (white - black)
-            selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
-            # selected_cocoa_reflectance = selected_cocoa_reflectance / np.linalg.norm(selected_cocoa_reflectance, axis=-1, keepdims=True)
+            # selected_cocoa_reflectance = selected_cocoa_reflectance / selected_cocoa_reflectance.max(axis=-1, keepdims=True)
+
+            # compute the standard normal variate
+
+            # selected_cocoa_reflectance = (selected_cocoa_reflectance - selected_cocoa_reflectance.mean(axis=0)) / selected_cocoa_reflectance.std(axis=0)
+
 
             if debug:
                 plt.figure(figsize=(8, 8))

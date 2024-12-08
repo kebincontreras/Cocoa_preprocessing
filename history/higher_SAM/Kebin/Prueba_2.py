@@ -4,7 +4,8 @@ from scipy.io import loadmat
 from sklearn.decomposition import PCA
 
 # Ruta de la carpeta donde están los archivos
-path = "C://Users//USUARIO//Documents//UIS_Cacao//Base_Datos_Cacao//cocoa_ultimate_dataset//cocoa_ultimate_dataset//"
+# path = "C://Users//USUARIO//Documents//UIS_Cacao//Base_Datos_Cacao//cocoa_ultimate_dataset//cocoa_ultimate_dataset//"
+path = '/home/enmartz/Jobs/cacao/Base_Datos_Cacao/cocoa_ultimate_dataset_entrega2/'
 
 # Cargar archivos .mat
 blanco_VIS = loadmat(path + 'BLANCO_EXP50G_010824_VIS.mat')['BLANCO']
@@ -126,6 +127,54 @@ plt.tight_layout()
 plt.show()
 
 # 3. Graficar PCA para VIS y NIR filtrado
+# Realizar PCA para las firmas VIS y NIR
+pca = PCA(n_components=2)
+pca_VIS = pca.fit_transform(np.vstack((lote_VIS, loteMIX_VIS)))
+pca_NIR = pca.fit_transform(np.vstack((lote_NIR_filtered, loteMIX_NIR_filtered)))
+
+# Obtener la varianza explicada por cada componente
+explained_variance_VIS = pca.explained_variance_ratio_ * 100
+explained_variance_NIR = pca.explained_variance_ratio_ * 100
+
+plt.figure(figsize=(14, 12))
+
+plt.subplot(2, 2, 1)
+plt.scatter(pca_VIS[:lote_VIS.shape[0], 0], pca_VIS[:lote_VIS.shape[0], 1], alpha=0.7, label='Lote VIS', color='blue')
+plt.scatter(pca_VIS[lote_VIS.shape[0]:, 0], pca_VIS[lote_VIS.shape[0]:, 1], alpha=0.7, label='Lote MIX VIS', color='red')
+plt.title(f'PCA VIS (Varianza Explicada: {explained_variance_VIS[0]:.2f}%, {explained_variance_VIS[1]:.2f}%)')
+plt.xlabel('Componente principal 1')
+plt.ylabel('Componente principal 2')
+plt.legend()
+
+plt.subplot(2, 2, 2)
+plt.scatter(pca_VIS[:lote_VIS.shape[0], 0], pca_VIS[:lote_VIS.shape[0], 1], alpha=0.7, label='Lote VIS', color='blue')
+plt.scatter(pca_VIS[lote_VIS.shape[0]:, 0], pca_VIS[lote_VIS.shape[0]:, 1], alpha=0.7, label='Lote MIX VIS', color='red')
+plt.title(f'PCA VIS (Varianza Explicada: {explained_variance_VIS[0]:.2f}%, {explained_variance_VIS[1]:.2f}%)')
+plt.xlabel('Componente principal 1')
+plt.ylabel('Componente principal 2')
+plt.legend()
+
+plt.subplot(2, 2, 3)
+plt.scatter(pca_NIR[:lote_NIR_filtered.shape[0], 0], pca_NIR[:lote_NIR_filtered.shape[0], 1], alpha=0.7, label='Lote NIR', color='blue')
+plt.scatter(pca_NIR[lote_NIR_filtered.shape[0]:, 0], pca_NIR[lote_NIR_filtered.shape[0]:, 1], alpha=0.7, label='Lote MIX NIR', color='red')
+plt.title(f'PCA NIR (Varianza Explicada: {explained_variance_NIR[0]:.2f}%, {explained_variance_NIR[1]:.2f}%)')
+plt.xlabel('Componente principal 1')
+plt.ylabel('Componente principal 2')
+plt.legend()
+
+plt.subplot(2, 2, 4)
+plt.scatter(pca_NIR[:lote_NIR_filtered.shape[0], 0], pca_NIR[:lote_NIR_filtered.shape[0], 1], alpha=0.7, label='Lote NIR', color='blue')
+plt.scatter(pca_NIR[lote_NIR_filtered.shape[0]:, 0], pca_NIR[lote_NIR_filtered.shape[0]:, 1], alpha=0.7, label='Lote MIX NIR', color='red')
+plt.title(f'PCA NIR (Varianza Explicada: {explained_variance_NIR[0]:.2f}%, {explained_variance_NIR[1]:.2f}%)')
+plt.xlabel('Componente principal 1')
+plt.ylabel('Componente principal 2')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+
+# 4. Graficar PCA para VIS y NIR filtrado
 # Realizar PCA para las firmas VIS y NIR
 pca = PCA(n_components=2)
 pca_VIS = pca.fit_transform(np.vstack((lote_VIS, loteMIX_VIS)))
